@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-print("Hello world")
-print("helol")
+print("Hi")
 ```
 
