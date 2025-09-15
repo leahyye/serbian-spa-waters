@@ -1,6 +1,6 @@
 ---
-title: "testing"
-author: "Leah Ye"
+title: "Serbian Spa Waters Report"
+author: "[GUYS ADD YOUR NAMES AND STUDENT ID HERE], Leah Ye 300651931"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -9,7 +9,64 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-print("Hi")
+
+# **Introduction & Background** - Liz
+
+Hydrochemical data for the mineral and thermal waters studied on Serbian territory.
+
+# **Descriptive analysis of the data** - Leah
+
+The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:  
+
+* idNum: Integer - Index of each observation;  
+* waterSource: Character - Spa/Spring the observation belongs to;     
+* tempCels: Numerical - Outflowing temperature (°C);
+* pH: Numerical - pH level(Acidity/Alkalinity);  
+* elecCond: Integer - Electrical Conductivity of water measured immediately after collection on the spot, total ion concentration (μS/cm);   
+* totSolid: Numerical - Total dissolved solids (gL)
+* Ca2: Numerical -  Calcium (mg/L);  
+* Mg2: Numerical - Magnesium (mg/L);    
+* Na: Numerical - Sodium (mg/L);   
+* K: Numerical - Potassium (mg/L);   
+* Cl: Numerical - Chlorine (mg/L);  
+* S02: Numerical - Sulfate (mg/L);   
+* HCO: Numerical - Bicarbonate (mg/L);    
+* Si0: Numerical - Silica, dissolved silicon dioxide (mg/L);    
+* geoStruct: Integer - The geological structure the water was collected from (1 = Hydrological Basin, 2 = Karstic terrains, 3 = Volcanogen Massifs, 4 = Metamorphic Regions)
+
+Where Ions$(HCO_3^−, Ca^{2+}, Mg^2+, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Instutute of Public Health of Serbia. Titration methods were applied to measure alkalinaty of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.  
+
+Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations. 
+
+## **Summary Statistics** - Liz
+
+```{r echo=FALSE}
+data <- read.csv("serbianspawater.csv")
 ```
+
+
+
+# **Graphical analysis** 
+
+## Pairs Plot - Liz
+
+## Box Plot - Harry
+
+## Correlation matrix - Harry
+
+## Eigenvalues - Claire
+
+## PCA - Leah
+
+# Multivariate Normal - Harry
+
+# Surprising Observations - Claire
+
+
+
+
+# Factor Analysis
+
+# geoStruct groups
+
 
