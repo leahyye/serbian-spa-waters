@@ -71,6 +71,26 @@ kable(summary, caption = "Summary Statistics for Numeric Columns")
 
 ## Pairs Plot - Liz
 
+```{r}
+# Create pairs plot 
+pairs_plot <- ggpairs(
+  numeric_cols,
+  upper = list(continuous = wrap("cor", size = 6, color = "black")), 
+  lower = list(continuous = wrap("points", alpha = 0.6, size = 2)), 
+  diag  = list(continuous = wrap("densityDiag", alpha = 0.5))        
+) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    axis.title = element_text(size = 14, color = "black"),
+    strip.text = element_text(size = 14, color = "black")
+  )
+
+# Save as PNG
+ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, height = 25, units = "in", dpi = 300)
+```
+
+
 ## Box Plot - Harry
 
 ## Correlation matrix - Harry
