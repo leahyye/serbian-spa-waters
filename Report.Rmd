@@ -46,7 +46,24 @@ Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcan
 data <- read.csv("serbianspawater.csv")
 ```
 
+```{r}
+# Select numeric columns
+numeric_cols <- data[sapply(data, is.numeric)]
 
+# Create summary table
+summary <- data.frame(
+  Variable = names(numeric_cols),
+  Mean     = round(sapply(numeric_cols, mean), 2),
+  Median   = round(sapply(numeric_cols, median), 2),
+  SD       = round(sapply(numeric_cols, sd), 2),
+  Min      = round(sapply(numeric_cols, min), 2),
+  Max      = round(sapply(numeric_cols, max), 2),
+  row.names = NULL
+)
+
+# Display table
+kable(summary, caption = "Summary Statistics for Numeric Columns")
+```
 
 # **Graphical analysis** 
 
