@@ -98,6 +98,7 @@ ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, heigh
 ## Box Plot - Harry
 ```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8}
 
+
 # Select numeric features for scaling 
 X <- data[, 3:14]                    #all numerical catergories
 X <- as.data.frame(scale(X))         # z-scores per variable
@@ -126,8 +127,7 @@ Variables were standardised to z-scores to allow direct comparison despite diffe
 ## Correlation matrix - Harry
 
 ```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
-cor_mat <- cor(data[, 3:14]) # correlation matrix on the relevant numerical columns
-
+cor_mat <- cor(X, use = "pairwise.complete.obs", method = "pearson")
 corrplot(cor_mat,
          method = "color",        
          type = "upper",          
@@ -180,7 +180,10 @@ pca_fit
 
 # Multivariate Normal - Harry
 ```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
-
+# Fit MANOVA model using geoStruct as grouping
+fit <- manova(as.matrix(X) ~ data$geoStruct)
+# Extract residuals
+res <- residuals(fit)
 # Mahalanobis distances of residuals
 mu_res <- colMeans(res)
 S_res  <- cov(res)
