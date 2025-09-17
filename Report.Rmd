@@ -1,6 +1,6 @@
 ---
 title: "Serbian Spa Waters Report"
-author: "[GUYS ADD YOUR NAMES AND STUDENT ID HERE], Leah Ye 300651931"
+author: "[GUYS ADD YOUR NAMES AND STUDENT ID HERE], Leah Ye 300651931, Harry Philpott 300667756"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -11,6 +11,8 @@ library(dplyr)
 library(knitr)
 library(GGally)
 library(ggplot2)
+library(tidyr)
+library(corrplot)
 ```
 
 
@@ -94,8 +96,52 @@ ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, heigh
 
 
 ## Box Plot - Harry
+```{r boxplots, echo=FALSE, include=TRUE warning=FALSE, message=FALSE, fig.asp=0.8}
+
+
+# Select numeric features for scaling 
+X <- data[, 3:14]                    #all numerical catergories
+X <- as.data.frame(scale(X))         # z-scores per variable
+X$.row <- 1:nrow(X)
+
+# reshaping is to long for ggplot so use tidyr library
+box_long <- pivot_longer(           #tidyr
+  X,
+  cols = - .row,
+  names_to = "variable",
+  values_to = "value"
+)
+
+# boxplots on a common axis (z-scored)
+ggplot(box_long, aes(x = variable, y = value)) +
+  geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
+  coord_flip() +
+  labs(x = NULL, y = "Scaled value (z-score)",
+       title = "Serbian spa water: Boxplots of all variables (z-scored)") +
+  theme(panel.grid.minor = element_blank())
+```
+Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots show that some features (e.g. Na⁺, Cl⁻, HCO₃⁻) have greater variability and distinct outliers, while others remain tightly clustered around the mean. This highlights which chemical measures are most heterogeneous across the spa waters.
+
+
 
 ## Correlation matrix - Harry
+
+```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+corrplot(cor_mat,
+         method = "color",        
+         type = "upper",          
+         order = "hclust",        
+         addCoef.col = "black",   
+         number.cex = 0.7,        
+         tl.col = "black",        
+         tl.srt = 45,             
+         diag = FALSE, 
+         col = colorRampPalette(c("firebrick3","white","steelblue4"))(200)
+        
+)
+```
+Electrical conductivity, total solids, sodium, potassium, and chloride form a strongly correlated cluster, indicating they vary together across spa waters. In contrast, pH shows moderate negative correlations with several ions (e.g., Ca²⁺, Mg²⁺, HCO₃⁻), suggesting different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
+
 
 ## Eigenvalues - Claire
 
@@ -132,6 +178,25 @@ pca_fit
 * 
 
 # Multivariate Normal - Harry
+```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+
+# Mahalanobis distances of residuals
+mu_res <- colMeans(res)
+S_res  <- cov(res)
+d2_res <- mahalanobis(res, center = mu_res, cov = S_res)
+
+# Degrees of freedom = number of variables
+p <- ncol(res)
+
+# QQ-plot
+qqplot(qchisq(ppoints(nrow(res)), df = p), d2_res,
+       main = "QQ-plot of MANOVA residuals",
+       xlab = expression(paste(chi^2, " quantiles")),
+       ylab = expression(paste("Ordered residual ", d[M]^2)))
+abline(0,1,col="steelblue4")
+```
+The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. Strictly speaking, this means the assumption of multivariate normality is not fully satisfied. Nevertheless, since most observations adhere reasonably closely to the expected distribution, it is common in practice to proceed under the approximate normality assumption while acknowledging these limitations and interpreting MANOVA results with some caution.
+
 
 # Surprising Observations - Claire
 
