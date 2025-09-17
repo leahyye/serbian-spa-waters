@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(knitr)
+library(GGally)
+library(ggplot2)
 ```
 
 
