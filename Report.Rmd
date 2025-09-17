@@ -38,9 +38,11 @@ The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 * Si0: Numerical - Silica, dissolved silicon dioxide (mg/L);    
 * geoStruct: Integer - The geological structure the water was collected from (1 = Hydrological Basin, 2 = Karstic terrains, 3 = Volcanogen Massifs, 4 = Metamorphic Regions)
 
-Where Ions$(HCO_3^−, Ca^{2+}, Mg^2+, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Instutute of Public Health of Serbia. Titration methods were applied to measure alkalinaty of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.  
+Where Ions$(HCO_3^−, Ca^{2+}, Mg^2+, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.  
 
-Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations. 
+Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations.  
+
+There are no duplicates, missing data, zeros, negatives, NAs or NULL values in the dataset. 
 
 ## **Summary Statistics** - Liz
 
@@ -71,7 +73,7 @@ kable(summary, caption = "Summary Statistics for Numeric Columns")
 
 ## Pairs Plot - Liz
 
-```{r}
+```{r echo=FALSE}
 # Create pairs plot 
 pairs_plot <- ggpairs(
   numeric_cols,
@@ -98,6 +100,36 @@ ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, heigh
 ## Eigenvalues - Claire
 
 ## PCA - Leah
+```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot, fig.cap="Figure 4: PCA plot", fig.asp=0.8}
+library(plotly)
+pca_fit <- prcomp(data[3:14], center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
+plot(pca_fit, type="l")
+```
+
+* PC1 explains most of the variance (around 4)  
+* PC2 explains a fair part of the variance
+* At PC3 and 4, the extra variance explained is a bit less  
+* From PC5, the line starts to flatten  
+* Each additional component after PC5 only adds a tiny bit of variance. 
+
+```{r echo=FALSE, PC-Summary-tab}
+summary(pca_fit)
+```
+
+* PC1 has a standard deviation of 2.05, and explains 35.1% of the variance
+* PC2 adds 17.6%, and explains 52.6% of the variance
+* PC3 adds 12.4%, and explains 65.0% of the variance  
+* PC4 adds 9.7%, and explains 74.7% of the variance
+* After PC4 onwards, each PC explains less than 9% of the extra variance
+* PC5 explains 83.2% of the variance
+* PC6 explains 90.5% of the variance
+* PC9 explains the most variance (99.1%)
+
+```{r}
+pca_fit
+```
+
+* 
 
 # Multivariate Normal - Harry
 
