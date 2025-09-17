@@ -40,7 +40,7 @@ The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 * Si0: Numerical - Silica, dissolved silicon dioxide (mg/L);    
 * geoStruct: Integer - The geological structure the water was collected from (1 = Hydrological Basin, 2 = Karstic terrains, 3 = Volcanogen Massifs, 4 = Metamorphic Regions)
 
-Where Ions$(HCO_3^−, Ca^{2+}, Mg^2+, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.  
+Where Ions$(HCO_3^−, Ca^{2+}, Mg^{2+}, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.  
 
 Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations.  
 
@@ -176,7 +176,12 @@ summary(pca_fit)
 pca_fit
 ```
 
-* 
+* In PC1, $HCO_3^-(-0.447), Na^+(-0.408), elecCond(-0.394), K^+(-0.399), totSolid(-0.350)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with a more negative score are more mineralised waters, whereas samples with a more positive score are more dilute waters. 
+* PC2: $Mg^{2+}(0.507), Ca^{2+}(-0.195), tempCels(-0.473), pH(-0.302)$, have the strongest influence. PC2 separates water with high Calcium and Magnesium(hardness) from waters at higher temperatures and pH(alkalinity). This could mean that there is a difference between hard, cold waters and warmer, alkaline waters.   
+* PC3: $SiO_2(-0.473), SO^{2−}_4(-0.292), Cl^−(0.406), totSolid(0.277)$ have the strongest influence. Waters that have more Silica and Sulfate have less chloride and mineralisation.  
+* PC4: $SiO_2(0.383), Ca^{2+}(-0.315), Cl^−(0.505), totSolid(0.446)$ have the strongest influence. Waters with more sulfate, chlorine and mineralisation have less calcium. 
+
+[will have to do some research to look into the constrasts between explanatory variables - Leah]
 
 # Multivariate Normal - Harry
 ```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
