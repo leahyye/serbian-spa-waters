@@ -19,7 +19,7 @@ library(kableExtra)
 
 # **Introduction & Background** - Liz
 
-Hydrochemical data for the mineral and thermal waters studied on Serbian territory.
+This study analyzed hydrochemical data for mineral and thermal waters in Serbian territory. The authors used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability  among the observations.  Two of these four PCs are based on measures of mineralization of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity.  The results of HCA achieved a total correct classification of 83.3%  for predefined geotectonic units, and the dendogram produced classified the samples into four major groups and eleven subgroups. 
 
 # **Descriptive analysis of the data** - Leah
 
