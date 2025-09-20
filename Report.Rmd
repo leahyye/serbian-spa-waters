@@ -13,6 +13,7 @@ library(GGally)
 library(ggplot2)
 library(tidyr)
 library(corrplot)
+library(kableExtra)
 ```
 
 
@@ -54,7 +55,7 @@ data <- read.csv("serbianspawater.csv")
 
 ```{r}
 # Select numeric columns
-numeric_cols <- data[sapply(data, is.numeric)]
+numeric_cols <- data[sapply(data, is.numeric) & !(names(data) %in% c("idNum", "geoStruct"))]
 
 # Create summary table
 summary <- data.frame(
@@ -67,15 +68,24 @@ summary <- data.frame(
   row.names = NULL
 )
 
+# Format summary to show two decimal places
+summary_formatted <- summary
+summary_formatted[, 2:6] <- lapply(summary[, 2:6], function(x) sprintf("%.2f", x))
+
 # Display table
-kable(summary, caption = "Summary Statistics for Numeric Columns")
+kable(summary_formatted, caption = "Summary Statistics for Numeric Columns", align = c("l", "r", "r", "r", "r", "r")) %>%
+  kable_styling(full_width = FALSE, position = "center") %>%
+  row_spec(0, extra_css = "font-family: serif;") %>%  
+  column_spec(1:ncol(summary), extra_css = "font-family: serif;")  
 ```
+
+This dataset is characterized by high variability.  This is likely due to the different water sources. pH is more consistent, ranging from neutral (6.5) to slightly basic (9.0), which are fairly typical values for water in nature. The range of temperatures recorded in this dataset is from 14.40 to 95.00 degrees celcius.  The large standard deviation confirms that there is a lot of variability in temperature.  Some of these water sources are near boiling temperatures.  Electrical conductivity also has a very large range, from 110.00 to 5100.00 $\mu$S/cm. This indicates that some water samples have a lot of dissolved ions, leading to high conductivity.  This measure is roughly proportional to the total dissolved solids, which also displays a large range, from 0.10 to 6.20. The maximum is more than three standard deviations above the mean, suggesting right-skew and surprising observations. There are eight major ions in this dataset: Calcium ($Ca^{2+}$), Magnesium ($Mg^{2+}$), Sodium ($Na^+ $), Potassium ($K^+$), Chloride ($CI^-$), Sulfate ($SO^{-2}_4$), Bicarbonate ($HCO^-_3$), and Silica ($SiO_2$).  All of them are characterized by high variability, often with right-skew. Calcium has a mean of 61.02 and a range of 4.00 to 178.00. The maximum is three standard deviations above the mean. Magnesium has an average of 44.46 and a range of 0.10 to 293.00, with a maximum that is four standard deviations above the mean. Sodium has a high average of 447.09, and a high maximum of 2280.00, which is again three standard deviations above the mean.  Potassium is not as elevated with a mean of 16.58, but it is still somewhat variable.  Chloride has a particularly extreme maximum of 1560.00, which is five standard deviations above its mean of 108.70.  Sulfate has a mean of 57.53 and a maximum of 486.00, which is four standard deviations above the mean.  Bicarbonate has a very high mean of 1297.91, and the maximum reaches a staggering 3538.00. The last major ion is Silica, which has a mean of 38.73, but a range from 2.00 to 120.00.  To summarize, the whole dataset show high variability and pervasive right-skewness.  The chemical composition of the water samples is largely dominated by bicarbonate, with sodium and chloride also reaching very high values for some samples. 
 
 # **Graphical analysis** 
 
 ## Pairs Plot - Liz
 
-```{r echo=FALSE}
+```{r pairs_plot, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Create pairs plot 
 pairs_plot <- ggpairs(
   numeric_cols,
