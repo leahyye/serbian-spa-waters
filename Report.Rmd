@@ -100,6 +100,8 @@ pairs_plot <- ggpairs(
     strip.text = element_text(size = 14, color = "black")
   )
 
+pairs_plot
+
 # Save as PNG
 ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, height = 25, units = "in", dpi = 300)
 ```
