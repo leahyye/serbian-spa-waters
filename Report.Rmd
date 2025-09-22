@@ -106,11 +106,10 @@ pairs_plot
 ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, height = 25, units = "in", dpi = 300)
 ```
 
+* All histograms show non-normality (not bell shaped)
 
 ## Box Plot - Harry
 ```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8}
-
-
 # Select numeric features for scaling 
 X <- data[, 3:14]                    #all numerical catergories
 X <- as.data.frame(scale(X))         # z-scores per variable
@@ -134,6 +133,116 @@ ggplot(box_long, aes(x = variable, y = value)) +
 ```
 Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots show that some features (e.g. Na⁺, Cl⁻, HCO₃⁻) have greater variability and distinct outliers, while others remain tightly clustered around the mean. This highlights which chemical measures are most heterogeneous across the spa waters.
 
+However, all variables in the boxplot have a non-symmetrical shape and contain outliers. This violates the LDA assumption of normality so log transformation of explanatory variables is needed. 
+
+# Multivariate Normal - Harry
+```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+# Fit MANOVA model using geoStruct as grouping
+fit <- manova(as.matrix(X) ~ data$geoStruct)
+# Extract residuals
+res <- residuals(fit)
+# Mahalanobis distances of residuals
+mu_res <- colMeans(res)
+S_res  <- cov(res)
+d2_res <- mahalanobis(res, center = mu_res, cov = S_res)
+
+# Degrees of freedom = number of variables
+p <- ncol(res)
+
+# QQ-plot
+qqplot(qchisq(ppoints(nrow(res)), df = p), d2_res,
+       main = "QQ-plot of MANOVA residuals",
+       xlab = expression(paste(chi^2, " quantiles")),
+       ylab = expression(paste("Ordered residual ", d[M]^2)))
+abline(0,1,col="steelblue4")
+```
+The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. Strictly speaking, this means the assumption of multivariate normality is not fully satisfied. Nevertheless, since most observations adhere reasonably closely to the expected distribution, it is common in practice to proceed under the approximate normality assumption while acknowledging these limitations and interpreting MANOVA results with some caution.
+
+```{r}
+# Check p value
+summary(fit, test = "Hotelling-Lawley")
+```
+
+* Extremely small p-value indicates there is significant differences between mean vectors of the geoStruc groups.
+
+# Log transformation of variables - Leah
+
+```{r}
+# Log transforming numeric variables and adding them into dataset as new columns
+data$log.tempCels <- log(data$tempCels)
+data$log.pH <- log(data$pH)
+data$log.elec.Cond <- log(data$elecCond)
+data$log.totSolid <- log(data$totSolid)
+data$log.Ca2 <- log(data$Ca2)
+data$log.Mg2 <- log(data$Mg2)
+data$log.Na <- log(data$Na)
+data$log.K <- log(data$K)
+data$log.Cl <- log(data$Cl)
+data$log.SO2 <- log(data$SO2)
+data$log.HCO <- log(data$HCO)
+data$log.SiO <- log(data$SiO)
+```
+
+
+## Recheck assumptions - Leah
+
+```{r echo=FALSE}
+X.log <- data[, 16:27]                    # all log transformed numerical variables
+X.log <- as.data.frame(scale(X.log))         # z-scores per variable
+X.log$.row <- 1:nrow(X.log)
+
+box_long <- pivot_longer(           
+  X.log,
+  cols = - .row,
+  names_to = "variable",
+  values_to = "value"
+)
+
+# not z-scored
+ggplot(box_long, aes(x = variable, y = value)) +
+  geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
+  coord_flip() +
+  labs(x = NULL, y = "Scaled value (z-score)",
+       title = "Serbian spa water: Boxplots of all log transformed variables (z-scored)") +
+  theme(panel.grid.minor = element_blank())
+```
+
+* Boxplots look much better than before  
+* The medians are approximately at 0, and plots are much more symmetric.  
+* However, there are some outliers (more than 2 standard deviations above and below the mean). 
+
+```{r echo=FALSE}
+X_log_matrix <- as.matrix(X.log[,-which(names(X.log) == ".row")]) # Remove the .row column for analysis
+
+# Fit MANOVA model
+fit_log <- manova(X_log_matrix ~ data$geoStruct)
+res_log <- residuals(fit_log)
+
+# Reusing Prev code
+# Mahalanobis distances of residuals
+mu_res_log <- colMeans(res_log)
+S_res_log  <- cov(res_log)
+d2_res_log <- mahalanobis(res_log, center = mu_res_log, cov = S_res_log)
+
+# Degrees of freedom = number of variables
+p <- ncol(res_log)
+
+# QQ-plot
+qqplot(qchisq(ppoints(nrow(res_log)), df = p), d2_res_log,
+       main = "QQ-plot of MANOVA (log transformed) residuals",
+       xlab = expression(paste(chi^2, " quantiles")),
+       ylab = expression(paste("Ordered residual ", d[M]^2)))
+abline(0,1,col="steelblue4")
+```
+
+* The points follow the line much more closely, only slight deviations from the line at low and high values. 
+
+```{r}
+# Check p value
+summary(fit_log, test = "Hotelling-Lawley")
+```
+
+* P-value is 0.05712, so there is not enough evidence to conclude that the multivariate means of geoStruc groups are statistically different from each other.
 
 
 ## Correlation matrix - Harry
@@ -161,7 +270,7 @@ Electrical conductivity, total solids, sodium, potassium, and chloride form a st
 ## PCA - Leah
 ```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot, fig.cap="Figure 4: PCA plot", fig.asp=0.8}
 library(plotly)
-pca_fit <- prcomp(data[3:14], center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
+pca_fit <- prcomp(data[3:s14], center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
 plot(pca_fit, type="l")
 ```
 
@@ -193,30 +302,7 @@ pca_fit
 * PC3: $SiO_2(-0.473), SO^{2−}_4(-0.292), Cl^−(0.406), totSolid(0.277)$ have the strongest influence. Waters that have more Silica and Sulfate have less chloride and mineralisation.  
 * PC4: $SiO_2(0.383), Ca^{2+}(-0.315), Cl^−(0.505), totSolid(0.446)$ have the strongest influence. Waters with more sulfate, chlorine and mineralisation have less calcium. 
 
-[will have to do some research to look into the constrasts between explanatory variables - Leah]
 
-# Multivariate Normal - Harry
-```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
-# Fit MANOVA model using geoStruct as grouping
-fit <- manova(as.matrix(X) ~ data$geoStruct)
-# Extract residuals
-res <- residuals(fit)
-# Mahalanobis distances of residuals
-mu_res <- colMeans(res)
-S_res  <- cov(res)
-d2_res <- mahalanobis(res, center = mu_res, cov = S_res)
-
-# Degrees of freedom = number of variables
-p <- ncol(res)
-
-# QQ-plot
-qqplot(qchisq(ppoints(nrow(res)), df = p), d2_res,
-       main = "QQ-plot of MANOVA residuals",
-       xlab = expression(paste(chi^2, " quantiles")),
-       ylab = expression(paste("Ordered residual ", d[M]^2)))
-abline(0,1,col="steelblue4")
-```
-The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. Strictly speaking, this means the assumption of multivariate normality is not fully satisfied. Nevertheless, since most observations adhere reasonably closely to the expected distribution, it is common in practice to proceed under the approximate normality assumption while acknowledging these limitations and interpreting MANOVA results with some caution.
 
 
 # Surprising Observations - Claire
