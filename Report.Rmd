@@ -223,14 +223,8 @@ for (i in 1:ncol(X.log)) {
   qqnorm(X.log[, i], main = names(X.log)[i])
   qqline(X.log[, i], col = "red")
 }
-
-# Alternatively, use Shapiro-Wilk tests (though less reliable for large n)
-shapiro_results <- sapply(X.log, shapiro.test)
-shapiro_pvalues <- sapply(shapiro_results, function(x) x$p.value)
-print(shapiro_pvalues)
 ```
 p-value > 0.05 suggests normality
-
 
 2. Check Multivariate normality (Linear combinations)
 ```{r echo=FALSE}
@@ -261,7 +255,7 @@ abline(0,1,col="steelblue4")
 
 ```{r}
 # Check p value
-summary(fit_log, test = "Hotelling-Lawley")
+summary(fit_log, test = "Hotelling-Lawley") # If anyone remembers the actual test please update it in the code cuz i forgot which one it is
 ```
 
 * P-value is 0.05712, so there is not enough evidence to conclude that the multivariate means of geoStruc groups are statistically different from each other.
@@ -292,7 +286,7 @@ ggplot(pca_scores, aes(x = PC1, y = PC2, color = factor(geoStruct))) +
 * There is some linear separability. 
 
 2. Check Equality of Covariance Matrices
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(biotools)
 # Box's M Test
 boxM_result <- boxM(X_log_matrix, group = as.factor(data$geoStruct))
@@ -351,7 +345,7 @@ Electrical conductivity, total solids, sodium, potassium, and chloride form a st
 ## PCA - Leah
 ```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot, fig.cap="Figure 4: PCA plot", fig.asp=0.8}
 library(plotly)
-pca_fit <- prcomp(data[3:s14], center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
+pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
 plot(pca_fit, type="l")
 ```
 
@@ -391,8 +385,8 @@ pca_fit
 
 
 
-# Factor Analysis
+# Factor Analysis - do in W11
 
-# geoStruct groups
+# geoStruct groups - answer
 
 
