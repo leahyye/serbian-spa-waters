@@ -81,6 +81,8 @@ kable(summary_formatted, caption = "Summary Statistics for Numeric Columns", ali
 
 This dataset is characterized by high variability.  This is likely due to the different water sources. pH is more consistent, ranging from neutral (6.5) to slightly basic (9.0), which are fairly typical values for water in nature. The range of temperatures recorded in this dataset is from 14.40 to 95.00 degrees celcius.  The large standard deviation confirms that there is a lot of variability in temperature.  Some of these water sources are near boiling temperatures.  Electrical conductivity also has a very large range, from 110.00 to 5100.00 $\mu$S/cm. This indicates that some water samples have a lot of dissolved ions, leading to high conductivity.  This measure is roughly proportional to the total dissolved solids, which also displays a large range, from 0.10 to 6.20. The maximum is more than three standard deviations above the mean, suggesting right-skew and surprising observations. There are eight major ions in this dataset: Calcium ($Ca^{2+}$), Magnesium ($Mg^{2+}$), Sodium ($Na^+ $), Potassium ($K^+$), Chloride ($CI^-$), Sulfate ($SO^{-2}_4$), Bicarbonate ($HCO^-_3$), and Silica ($SiO_2$).  All of them are characterized by high variability, often with right-skew. Calcium has a mean of 61.02 and a range of 4.00 to 178.00. The maximum is three standard deviations above the mean. Magnesium has an average of 44.46 and a range of 0.10 to 293.00, with a maximum that is four standard deviations above the mean. Sodium has a high average of 447.09, and a high maximum of 2280.00, which is again three standard deviations above the mean.  Potassium is not as elevated with a mean of 16.58, but it is still somewhat variable.  Chloride has a particularly extreme maximum of 1560.00, which is five standard deviations above its mean of 108.70.  Sulfate has a mean of 57.53 and a maximum of 486.00, which is four standard deviations above the mean.  Bicarbonate has a very high mean of 1297.91, and the maximum reaches a staggering 3538.00. The last major ion is Silica, which has a mean of 38.73, but a range from 2.00 to 120.00.  To summarize, the whole dataset show high variability and pervasive right-skewness.  The chemical composition of the water samples is largely dominated by bicarbonate, with sodium and chloride also reaching very high values for some samples. 
 
+[do we need a covariance matrix? - leah]
+
 # **Graphical analysis** 
 
 ## Pairs Plot - Liz
@@ -186,6 +188,9 @@ data$log.SiO <- log(data$SiO)
 
 ## Recheck assumptions - Leah
 
+### Multivariate normal assumptions check
+
+1. Check univariate normality for each variable
 ```{r echo=FALSE}
 X.log <- data[, 16:27]                    # all log transformed numerical variables
 X.log <- as.data.frame(scale(X.log))         # z-scores per variable
@@ -211,6 +216,23 @@ ggplot(box_long, aes(x = variable, y = value)) +
 * The medians are approximately at 0, and plots are much more symmetric.  
 * However, there are some outliers (more than 2 standard deviations above and below the mean). 
 
+```{r}
+par(mfrow = c(3, 4)) # Arrange plots in a 3x4 grid for 12 variables
+
+for (i in 1:ncol(X.log)) {
+  qqnorm(X.log[, i], main = names(X.log)[i])
+  qqline(X.log[, i], col = "red")
+}
+
+# Alternatively, use Shapiro-Wilk tests (though less reliable for large n)
+shapiro_results <- sapply(X.log, shapiro.test)
+shapiro_pvalues <- sapply(shapiro_results, function(x) x$p.value)
+print(shapiro_pvalues)
+```
+p-value > 0.05 suggests normality
+
+
+2. Check Multivariate normality (Linear combinations)
 ```{r echo=FALSE}
 X_log_matrix <- as.matrix(X.log[,-which(names(X.log) == ".row")]) # Remove the .row column for analysis
 
@@ -244,6 +266,65 @@ summary(fit_log, test = "Hotelling-Lawley")
 
 * P-value is 0.05712, so there is not enough evidence to conclude that the multivariate means of geoStruc groups are statistically different from each other.
 
+**Multivariate Normality assumptions are satisfied**  
+1. Each variable is normally distributed(univariate normality), and  
+2. Each linear combination of the variables is normally distributed 
+
+### Linear Discriminant analysis checking
+
+1. Check classes are linearly separable
+```{r}
+pca_result <- prcomp(X.log, scale. = TRUE)
+pca_scores <- as.data.frame(pca_result$x)
+pca_scores$geoStruct <- data$geoStruct # Add group labels
+
+# Plot first two PCs colored by group
+ggplot(pca_scores, aes(x = PC1, y = PC2, color = factor(geoStruct))) +
+  geom_point(size = 3) +
+  stat_ellipse(level = 0.95) + # Adds confidence ellipses
+  labs(title = "PCA: Checking Linear Separability",
+       color = "Geological\nStructure") +
+  theme_minimal()
+```
+
+* Groups seems to be intermingled, but within this there are clear clusters.  
+* Group 2(Karstic terrains) and 4(Metamorphic Regions) has clear groupings.  
+* There is some linear separability. 
+
+2. Check Equality of Covariance Matrices
+```{r}
+library(biotools)
+# Box's M Test
+boxM_result <- boxM(X_log_matrix, group = as.factor(data$geoStruct))
+boxM_result
+```
+
+* Small sample size of each group so Box's M test is not possible to use. So a visual LDA plot check is needed. 
+
+```{r}
+lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
+lda_fit <- lda(geoStruct ~ ., data = lda_data)
+lda_scores <- predict(lda_fit)$x
+
+plot_data <- data.frame(lda_scores, Group = as.factor(lda_data$geoStruct))
+
+ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
+  geom_point(size = 3) +
+  stat_ellipse(level = 0.95) +
+  labs(title = "LDA: Visual Check of Group Covariance",
+       subtitle = "Similar ellipse shapes & orientations suggest similar covariance",
+       x = "Linear Discriminant 1",
+       y = "Linear Discriminant 2") +
+  theme_minimal()
+```
+
+Comment on LDA plot here - Claude
+
+**LDA assumptions are satisfied**  
+1. The classes are linearly separable
+2. The covariance matrices are not too different.
+
+In other words, within each geoStruc group the predictors should be approximately normally distributed. The covariance matrices must be the same for all geoStruc groups. 
 
 ## Correlation matrix - Harry
 
@@ -265,7 +346,7 @@ corrplot(cor_mat,
 Electrical conductivity, total solids, sodium, potassium, and chloride form a strongly correlated cluster, indicating they vary together across spa waters. In contrast, pH shows moderate negative correlations with several ions (e.g., Ca²⁺, Mg²⁺, HCO₃⁻), suggesting different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
 
 
-## Eigenvalues - Claire
+## Eigenvalues - Harry/Claude
 
 ## PCA - Leah
 ```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot, fig.cap="Figure 4: PCA plot", fig.asp=0.8}
@@ -305,7 +386,7 @@ pca_fit
 
 
 
-# Surprising Observations - Claire
+# Surprising Observations - Harry/Claude
 
 
 
