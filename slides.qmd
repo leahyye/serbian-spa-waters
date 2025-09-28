@@ -1,16 +1,24 @@
 ---
-title: "slides"
+title: "Serbian Spa Waters"
 format: revealjs
 editor: visual
 ---
 
-## Serbian Spa Waters
+## Group 6
 
-Drink water 
+- Elizabeth
+- Claude
+- Leah  
+- Harry
 
-## Greetings
+## About the dataset
 
-hi frens
+Spa details here
+
+## Plot 1
+
+
+## Pairs plot
 
 ## Bye
 
