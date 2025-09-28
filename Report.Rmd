@@ -16,36 +16,35 @@ library(corrplot)
 library(kableExtra)
 ```
 
-
 # **Introduction & Background** - Liz
 
-This study analyzed hydrochemical data for mineral and thermal waters in Serbian territory. The authors used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability  among the observations.  Two of these four PCs are based on measures of mineralization of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity.  The results of HCA achieved a total correct classification of 83.3%  for predefined geotectonic units, and the dendogram produced classified the samples into four major groups and eleven subgroups. 
+This study analyzed hydrochemical data for mineral and thermal waters in Serbian territory. The authors used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability among the observations. Two of these four PCs are based on measures of mineralization of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity. The results of HCA achieved a total correct classification of 83.3% for predefined geotectonic units, and the dendogram produced classified the samples into four major groups and eleven subgroups.
 
 # **Descriptive analysis of the data** - Leah
 
-The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:  
+The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 
-* idNum: Integer - Index of each observation;  
-* waterSource: Character - Spa/Spring the observation belongs to;     
-* tempCels: Numerical - Outflowing temperature (°C);
-* pH: Numerical - pH level(Acidity/Alkalinity);  
-* elecCond: Integer - Electrical Conductivity of water measured immediately after collection on the spot, total ion concentration (μS/cm);   
-* totSolid: Numerical - Total dissolved solids (gL)
-* Ca2: Numerical -  Calcium (mg/L);  
-* Mg2: Numerical - Magnesium (mg/L);    
-* Na: Numerical - Sodium (mg/L);   
-* K: Numerical - Potassium (mg/L);   
-* Cl: Numerical - Chlorine (mg/L);  
-* S02: Numerical - Sulfate (mg/L);   
-* HCO: Numerical - Bicarbonate (mg/L);    
-* Si0: Numerical - Silica, dissolved silicon dioxide (mg/L);    
-* geoStruct: Integer - The geological structure the water was collected from (1 = Hydrological Basin, 2 = Karstic terrains, 3 = Volcanogen Massifs, 4 = Metamorphic Regions)
+-   idNum: Integer - Index of each observation;\
+-   waterSource: Character - Spa/Spring the observation belongs to;\
+-   tempCels: Numerical - Outflowing temperature (°C);
+-   pH: Numerical - pH level(Acidity/Alkalinity);\
+-   elecCond: Integer - Electrical Conductivity of water measured immediately after collection on the spot, total ion concentration (μS/cm);\
+-   totSolid: Numerical - Total dissolved solids (gL)
+-   Ca2: Numerical - Calcium (mg/L);\
+-   Mg2: Numerical - Magnesium (mg/L);\
+-   Na: Numerical - Sodium (mg/L);\
+-   K: Numerical - Potassium (mg/L);\
+-   Cl: Numerical - Chlorine (mg/L);\
+-   S02: Numerical - Sulfate (mg/L);\
+-   HCO: Numerical - Bicarbonate (mg/L);\
+-   Si0: Numerical - Silica, dissolved silicon dioxide (mg/L);\
+-   geoStruct: Integer - The geological structure the water was collected from (1 = Hydrological Basin, 2 = Karstic terrains, 3 = Volcanogen Massifs, 4 = Metamorphic Regions)
 
-Where Ions$(HCO_3^−, Ca^{2+}, Mg^{2+}, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.  
+Where Ions$(HCO_3^−, Ca^{2+}, Mg^{2+}, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.
 
-Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations.  
+Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations.
 
-There are no duplicates, missing data, zeros, negatives, NAs or NULL values in the dataset. 
+There are no duplicates, missing data, zeros, negatives, NAs or NULL values in the dataset.
 
 ## **Summary Statistics** - Liz
 
@@ -79,27 +78,27 @@ kable(summary_formatted, caption = "Summary Statistics for Numeric Columns", ali
   column_spec(1:ncol(summary), extra_css = "font-family: serif;")  
 ```
 
-This dataset is characterized by high variability.  This is likely due to the different water sources. pH is more consistent, ranging from neutral (6.5) to slightly basic (9.0), which are fairly typical values for water in nature. The range of temperatures recorded in this dataset is from 14.40 to 95.00 degrees celcius.  The large standard deviation confirms that there is a lot of variability in temperature.  Some of these water sources are near boiling temperatures.  Electrical conductivity also has a very large range, from 110.00 to 5100.00 $\mu$S/cm. This indicates that some water samples have a lot of dissolved ions, leading to high conductivity.  This measure is roughly proportional to the total dissolved solids, which also displays a large range, from 0.10 to 6.20. The maximum is more than three standard deviations above the mean, suggesting right-skew and surprising observations. There are eight major ions in this dataset: Calcium ($Ca^{2+}$), Magnesium ($Mg^{2+}$), Sodium ($Na^+ $), Potassium ($K^+$), Chloride ($CI^-$), Sulfate ($SO^{-2}_4$), Bicarbonate ($HCO^-_3$), and Silica ($SiO_2$).  All of them are characterized by high variability, often with right-skew. Calcium has a mean of 61.02 and a range of 4.00 to 178.00. The maximum is three standard deviations above the mean. Magnesium has an average of 44.46 and a range of 0.10 to 293.00, with a maximum that is four standard deviations above the mean. Sodium has a high average of 447.09, and a high maximum of 2280.00, which is again three standard deviations above the mean.  Potassium is not as elevated with a mean of 16.58, but it is still somewhat variable.  Chloride has a particularly extreme maximum of 1560.00, which is five standard deviations above its mean of 108.70.  Sulfate has a mean of 57.53 and a maximum of 486.00, which is four standard deviations above the mean.  Bicarbonate has a very high mean of 1297.91, and the maximum reaches a staggering 3538.00. The last major ion is Silica, which has a mean of 38.73, but a range from 2.00 to 120.00.  To summarize, the whole dataset show high variability and pervasive right-skewness.  The chemical composition of the water samples is largely dominated by bicarbonate, with sodium and chloride also reaching very high values for some samples. 
+This dataset is characterized by high variability. This is likely due to the different water sources. pH is more consistent, ranging from neutral (6.5) to slightly basic (9.0), which are fairly typical values for water in nature. The range of temperatures recorded in this dataset is from 14.40 to 95.00 degrees celcius. The large standard deviation confirms that there is a lot of variability in temperature. Some of these water sources are near boiling temperatures. Electrical conductivity also has a very large range, from 110.00 to 5100.00 $\mu$S/cm. This indicates that some water samples have a lot of dissolved ions, leading to high conductivity. This measure is roughly proportional to the total dissolved solids, which also displays a large range, from 0.10 to 6.20. The maximum is more than three standard deviations above the mean, suggesting right-skew and surprising observations. There are eight major ions in this dataset: Calcium ($Ca^{2+}$), Magnesium ($Mg^{2+}$), Sodium (\$Na\^+ $), Potassium ($K^+^$), Chloride ($CI-$), Sulfate ($SO\^{-2}\_4$), Bicarbonate ($HCO\^-\_3$), and Silica ($SiO_2\$). All of them are characterized by high variability, often with right-skew. Calcium has a mean of 61.02 and a range of 4.00 to 178.00. The maximum is three standard deviations above the mean. Magnesium has an average of 44.46 and a range of 0.10 to 293.00, with a maximum that is four standard deviations above the mean. Sodium has a high average of 447.09, and a high maximum of 2280.00, which is again three standard deviations above the mean. Potassium is not as elevated with a mean of 16.58, but it is still somewhat variable. Chloride has a particularly extreme maximum of 1560.00, which is five standard deviations above its mean of 108.70. Sulfate has a mean of 57.53 and a maximum of 486.00, which is four standard deviations above the mean. Bicarbonate has a very high mean of 1297.91, and the maximum reaches a staggering 3538.00. The last major ion is Silica, which has a mean of 38.73, but a range from 2.00 to 120.00. To summarize, the whole dataset show high variability and pervasive right-skewness. The chemical composition of the water samples is largely dominated by bicarbonate, with sodium and chloride also reaching very high values for some samples.
 
 [do we need a covariance matrix? - leah]
 
-# **Graphical analysis** 
+# **Graphical analysis**
 
 ## Pairs Plot - Liz
 
-```{r pairs_plot, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8}
-# Create pairs plot 
+```{r pairs_plot, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=16, fig.height=16, dpi=150, out.width='100%'}
+library(GGally)
+
 pairs_plot <- ggpairs(
   numeric_cols,
-  upper = list(continuous = wrap("cor", size = 6, color = "black")), 
-  lower = list(continuous = wrap("points", alpha = 0.6, size = 2)), 
-  diag  = list(continuous = wrap("densityDiag", alpha = 0.5))        
+  upper = list(continuous = wrap("cor", size = 3, color = "black")),
+  lower = list(continuous = wrap("points", alpha = 0.5, size = 0.8)),
+  diag  = list(continuous = wrap("densityDiag", alpha = 0.4))
 ) +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
-    axis.text.y = element_text(size = 12, color = "black"),
-    axis.title = element_text(size = 14, color = "black"),
-    strip.text = element_text(size = 14, color = "black")
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 7, color = "black"),
+    axis.text.y = element_text(size = 7, color = "black"),
+    strip.text  = element_text(size = 8, color = "black")
   )
 
 pairs_plot
@@ -108,9 +107,10 @@ pairs_plot
 ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, height = 25, units = "in", dpi = 300)
 ```
 
-* All histograms show non-normality (not bell shaped)
+-   All histograms show non-normality (not bell shaped)
 
 ## Box Plot - Harry
+
 ```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Select numeric features for scaling 
 X <- data[, 3:14]                    #all numerical catergories
@@ -133,11 +133,13 @@ ggplot(box_long, aes(x = variable, y = value)) +
        title = "Serbian spa water: Boxplots of all variables (z-scored)") +
   theme(panel.grid.minor = element_blank())
 ```
+
 Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots show that some features (e.g. Na⁺, Cl⁻, HCO₃⁻) have greater variability and distinct outliers, while others remain tightly clustered around the mean. This highlights which chemical measures are most heterogeneous across the spa waters.
 
-However, all variables in the boxplot have a non-symmetrical shape and contain outliers. This violates the LDA assumption of normality so log transformation of explanatory variables is needed. 
+However, all variables in the boxplot have a non-symmetrical shape and contain outliers. This violates the LDA assumption of normality so log transformation of explanatory variables is needed.
 
 # Multivariate Normal - Harry
+
 ```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Fit MANOVA model using geoStruct as grouping
 fit <- manova(as.matrix(X) ~ data$geoStruct)
@@ -158,6 +160,7 @@ qqplot(qchisq(ppoints(nrow(res)), df = p), d2_res,
        ylab = expression(paste("Ordered residual ", d[M]^2)))
 abline(0,1,col="steelblue4")
 ```
+
 The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. Strictly speaking, this means the assumption of multivariate normality is not fully satisfied. Nevertheless, since most observations adhere reasonably closely to the expected distribution, it is common in practice to proceed under the approximate normality assumption while acknowledging these limitations and interpreting MANOVA results with some caution.
 
 ```{r}
@@ -165,7 +168,7 @@ The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\c
 summary(fit, test = "Hotelling-Lawley")
 ```
 
-* Extremely small p-value indicates there is significant differences between mean vectors of the geoStruc groups.
+-   Extremely small p-value indicates there is significant differences between mean vectors of the geoStruc groups.
 
 # Log transformation of variables - Leah
 
@@ -185,12 +188,12 @@ data$log.HCO <- log(data$HCO)
 data$log.SiO <- log(data$SiO)
 ```
 
-
 ## Recheck assumptions - Leah
 
 ### Multivariate normal assumptions check
 
-1. Check univariate normality for each variable
+1.  Check univariate normality for each variable
+
 ```{r echo=FALSE}
 X.log <- data[, 16:27]                    # all log transformed numerical variables
 X.log <- as.data.frame(scale(X.log))         # z-scores per variable
@@ -212,9 +215,9 @@ ggplot(box_long, aes(x = variable, y = value)) +
   theme(panel.grid.minor = element_blank())
 ```
 
-* Boxplots look much better than before  
-* The medians are approximately at 0, and plots are much more symmetric.  
-* However, there are some outliers (more than 2 standard deviations above and below the mean). 
+-   Boxplots look much better than before\
+-   The medians are approximately at 0, and plots are much more symmetric.\
+-   However, there are some outliers (more than 2 standard deviations above and below the mean).
 
 ```{r}
 par(mfrow = c(3, 4)) # Arrange plots in a 3x4 grid for 12 variables
@@ -224,9 +227,11 @@ for (i in 1:ncol(X.log)) {
   qqline(X.log[, i], col = "red")
 }
 ```
-p-value > 0.05 suggests normality
 
-2. Check Multivariate normality (Linear combinations)
+p-value \> 0.05 suggests normality
+
+2.  Check Multivariate normality (Linear combinations)
+
 ```{r echo=FALSE}
 X_log_matrix <- as.matrix(X.log[,-which(names(X.log) == ".row")]) # Remove the .row column for analysis
 
@@ -251,22 +256,23 @@ qqplot(qchisq(ppoints(nrow(res_log)), df = p), d2_res_log,
 abline(0,1,col="steelblue4")
 ```
 
-* The points follow the line much more closely, only slight deviations from the line at low and high values. 
+-   The points follow the line much more closely, only slight deviations from the line at low and high values.
 
 ```{r}
 # Check p value
 summary(fit_log, test = "Hotelling-Lawley") # If anyone remembers the actual test please update it in the code cuz i forgot which one it is
 ```
 
-* P-value is 0.05712, so there is not enough evidence to conclude that the multivariate means of geoStruc groups are statistically different from each other.
+-   P-value is 0.05712, so there is not enough evidence to conclude that the multivariate means of geoStruc groups are statistically different from each other.
 
-**Multivariate Normality assumptions are satisfied**  
-1. Each variable is normally distributed(univariate normality), and  
-2. Each linear combination of the variables is normally distributed 
+**Multivariate Normality assumptions are satisfied**\
+1. Each variable is normally distributed(univariate normality), and\
+2. Each linear combination of the variables is normally distributed
 
 ### Linear Discriminant analysis checking
 
-1. Check classes are linearly separable
+1.  Check classes are linearly separable
+
 ```{r}
 pca_result <- prcomp(X.log, scale. = TRUE)
 pca_scores <- as.data.frame(pca_result$x)
@@ -281,11 +287,12 @@ ggplot(pca_scores, aes(x = PC1, y = PC2, color = factor(geoStruct))) +
   theme_minimal()
 ```
 
-* Groups seems to be intermingled, but within this there are clear clusters.  
-* Group 2(Karstic terrains) and 4(Metamorphic Regions) has clear groupings.  
-* There is some linear separability. 
+-   Groups seems to be intermingled, but within this there are clear clusters.\
+-   Group 2(Karstic terrains) and 4(Metamorphic Regions) has clear groupings.\
+-   There is some linear separability.
 
-2. Check Equality of Covariance Matrices
+2.  Check Equality of Covariance Matrices
+
 ```{r warning=FALSE, message=FALSE}
 library(biotools)
 # Box's M Test
@@ -293,7 +300,7 @@ boxM_result <- boxM(X_log_matrix, group = as.factor(data$geoStruct))
 boxM_result
 ```
 
-* Small sample size of each group so Box's M test is not possible to use. So a visual LDA plot check is needed. 
+-   Small sample size of each group so Box's M test is not possible to use. So a visual LDA plot check is needed.
 
 ```{r}
 lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
@@ -312,13 +319,10 @@ ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
   theme_minimal()
 ```
 
-Comment on LDA plot here - Claude
+**LDA assumptions are satisfied**\
+1. The classes are linearly separable 2. The covariance matrices are not too different.
 
-**LDA assumptions are satisfied**  
-1. The classes are linearly separable
-2. The covariance matrices are not too different.
-
-In other words, within each geoStruc group the predictors should be approximately normally distributed. The covariance matrices must be the same for all geoStruc groups. 
+In other words, within each geoStruc group the predictors should be approximately normally distributed. The covariance matrices must be the same for all geoStruc groups. Looking at the plot, the four groups form recognisable clusters: Group 1 (hydrological basins) is more spread out, Group 2 (karstic terrains) is very compact, Group 3 (volcanogen massifs) overlaps a little with other groups, and Group 4 (metamorphic regions) is quite separate on LD2. The ellipses are *fairly* similar in shape and orientation, which supports the equal covariance assumption, and the clear separation of some groups suggests LDA should work reasonably well here.
 
 ## Correlation matrix - Harry
 
@@ -337,56 +341,93 @@ corrplot(cor_mat,
         
 )
 ```
-Electrical conductivity, total solids, sodium, potassium, and chloride form a strongly correlated cluster, indicating they vary together across spa waters. In contrast, pH shows moderate negative correlations with several ions (e.g., Ca²⁺, Mg²⁺, HCO₃⁻), suggesting different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
 
+Electrical conductivity, total solids, sodium, potassium, and chloride form a strongly correlated cluster, indicating they vary together across spa waters. In contrast, pH shows moderate negative correlations with several ions (e.g., Ca²⁺, Mg²⁺, HCO₃⁻), suggesting different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
 
 ## Eigenvalues - Harry/Claude
 
 ## PCA - Leah
+
 ```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot, fig.cap="Figure 4: PCA plot", fig.asp=0.8}
 library(plotly)
 pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
 plot(pca_fit, type="l")
 ```
 
-* PC1 explains most of the variance (around 4)  
-* PC2 explains a fair part of the variance
-* At PC3 and 4, the extra variance explained is a bit less  
-* From PC5, the line starts to flatten  
-* Each additional component after PC5 only adds a tiny bit of variance. 
+-   PC1 explains most of the variance (around 4)\
+-   PC2 explains a fair part of the variance
+-   At PC3 and 4, the extra variance explained is a bit less\
+-   From PC5, the line starts to flatten\
+-   Each additional component after PC5 only adds a tiny bit of variance.
 
 ```{r echo=FALSE, PC-Summary-tab}
 summary(pca_fit)
 ```
 
-* PC1 has a standard deviation of 2.05, and explains 35.1% of the variance
-* PC2 adds 17.6%, and explains 52.6% of the variance
-* PC3 adds 12.4%, and explains 65.0% of the variance  
-* PC4 adds 9.7%, and explains 74.7% of the variance
-* After PC4 onwards, each PC explains less than 9% of the extra variance
-* PC5 explains 83.2% of the variance
-* PC6 explains 90.5% of the variance
-* PC9 explains the most variance (99.1%)
+-   PC1 has a standard deviation of 2.05, and explains 35.1% of the variance
+-   PC2 adds 17.6%, and explains 52.6% of the variance
+-   PC3 adds 12.4%, and explains 65.0% of the variance\
+-   PC4 adds 9.7%, and explains 74.7% of the variance
+-   After PC4 onwards, each PC explains less than 9% of the extra variance
+-   PC5 explains 83.2% of the variance
+-   PC6 explains 90.5% of the variance
+-   PC9 explains the most variance (99.1%)
 
 ```{r}
 pca_fit
 ```
 
-* In PC1, $HCO_3^-(-0.447), Na^+(-0.408), elecCond(-0.394), K^+(-0.399), totSolid(-0.350)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with a more negative score are more mineralised waters, whereas samples with a more positive score are more dilute waters. 
-* PC2: $Mg^{2+}(0.507), Ca^{2+}(-0.195), tempCels(-0.473), pH(-0.302)$, have the strongest influence. PC2 separates water with high Calcium and Magnesium(hardness) from waters at higher temperatures and pH(alkalinity). This could mean that there is a difference between hard, cold waters and warmer, alkaline waters.   
-* PC3: $SiO_2(-0.473), SO^{2−}_4(-0.292), Cl^−(0.406), totSolid(0.277)$ have the strongest influence. Waters that have more Silica and Sulfate have less chloride and mineralisation.  
-* PC4: $SiO_2(0.383), Ca^{2+}(-0.315), Cl^−(0.505), totSolid(0.446)$ have the strongest influence. Waters with more sulfate, chlorine and mineralisation have less calcium. 
-
-
-
+-   In PC1, $HCO_3^-(-0.447), Na^+(-0.408), elecCond(-0.394), K^+(-0.399), totSolid(-0.350)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with a more negative score are more mineralised waters, whereas samples with a more positive score are more dilute waters.
+-   PC2: $Mg^{2+}(0.507), Ca^{2+}(-0.195), tempCels(-0.473), pH(-0.302)$, have the strongest influence. PC2 separates water with high Calcium and Magnesium(hardness) from waters at higher temperatures and pH(alkalinity). This could mean that there is a difference between hard, cold waters and warmer, alkaline waters.\
+-   PC3: $SiO_2(-0.473), SO^{2−}_4(-0.292), Cl^−(0.406), totSolid(0.277)$ have the strongest influence. Waters that have more Silica and Sulfate have less chloride and mineralisation.\
+-   PC4: $SiO_2(0.383), Ca^{2+}(-0.315), Cl^−(0.505), totSolid(0.446)$ have the strongest influence. Waters with more sulfate, chlorine and mineralisation have less calcium.
 
 # Surprising Observations - Harry/Claude
 
+```{r}
+# Standardise numeric variables
+X <- scale(data[, 3:14])
 
+# Find any rows with at least one variable > 3 sd away
+outliers <- which(apply(abs(X), 1, max) > 3)
 
+# Show these "surprising" sites
+data[outliers, c("waterSource", "tempCels", "elecCond", "totSolid",
+                 "Na", "Cl", "HCO")]
+
+# Multivariate check: Mahalanobis distances
+mu <- colMeans(X)
+S  <- cov(X)
+d2 <- mahalanobis(X, center = mu, cov = S)
+
+# Flag all sites with distance above the chi-square 99.9% cutoff
+cut <- qchisq(0.999, df = ncol(X))
+which(d2 > cut)
+data[d2 > cut, c("waterSource", "tempCels", "elecCond", "totSolid",
+                 "Na", "Cl", "HCO")]
+
+# PCA on the log-transformed variables (already created earlier)
+pca_result <- prcomp(X_log_matrix, scale. = TRUE)
+
+# Get the scores for the first two PCs
+scores <- as.data.frame(pca_result$x)
+scores$waterSource <- data$waterSource
+scores$geoStruct <- as.factor(data$geoStruct)
+
+# Plot PC1 vs PC2, coloured by geological structure
+ggplot(scores, aes(x = PC1, y = PC2, colour = geoStruct, label = waterSource)) +
+  geom_point(size = 3) +
+  geom_text(aes(label = ifelse(abs(PC1) > 3 | abs(PC2) > 3, waterSource, "")),
+            vjust = -0.5, size = 3) +
+  labs(title = "PCA score plot: PC1 vs PC2",
+       x = "PC1 (overall mineralisation)",
+       y = "PC2 (hardness vs temp/pH)")
+```
+
+From the standardised $n=30$ observations, five springs are flagged as clear outliers: Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites has at least one measurement more than three standard deviations from the mean. Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate ($3360$ mg/L). Vranjska stands out for its near-boiling temperature ($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels relative to the rest of the dataset. These five cases are the most “surprising” when the dataset is examined variable by variable.
+
+The PCA score plot gives a multivariate view, showing which sites are extreme in terms of their overall chemical profiles rather than a single ion. Along the first principal component (PC1, representing overall mineralisation), Ribarska and Prolom score strongly negative, indicating highly mineralised waters, while Kanjiža lies on the opposite end with a very dilute profile. Along the second principal component (PC2, contrasting hardness with temperature/pH), Vuča sits at the upper extreme with unusually high hardness, whereas Prolom and Ribarska again fall at the lower end, consistent with warmer, more alkaline waters. Thus, while the z-score analysis highlights individual extremes, the PCA identifies different sites as “surprising” because of their distinctive multivariate signatures.
 
 # Factor Analysis - do in W11
 
 # geoStruct groups - answer
-
-

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "slides"
 format: revealjs
@@ -22,3 +23,6 @@ When you click the **Render** button a presentation will be generated that inclu
 ```{r}
 1 + 1
 ```
+=======
+
+>>>>>>> 7bdf4fbc9f839c75aa656b9c1e69718a2292ddf8
