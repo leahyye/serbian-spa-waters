@@ -1,28 +1,22 @@
-<<<<<<< HEAD
 ---
 title: "slides"
 format: revealjs
 editor: visual
 ---
 
-## Quarto
+## Serbian Spa Waters
 
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+Drink water 
 
-## Bullets
+## Greetings
 
-When you click the **Render** button a document will be generated that includes:
+hi frens
 
--   Content authored with markdown
--   Output from executable code
+## Bye
 
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
-
+that's it 
 ```{r}
-1 + 1
+520
 ```
-=======
 
->>>>>>> 7bdf4fbc9f839c75aa656b9c1e69718a2292ddf8
+
