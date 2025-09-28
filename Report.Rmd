@@ -319,10 +319,9 @@ ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
   theme_minimal()
 ```
 
-**LDA assumptions are satisfied**\
-1. The classes are linearly separable 2. The covariance matrices are not too different.
-
-In other words, within each geoStruc group the predictors should be approximately normally distributed. The covariance matrices must be the same for all geoStruc groups. Looking at the plot, the four groups form recognisable clusters: Group 1 (hydrological basins) is more spread out, Group 2 (karstic terrains) is very compact, Group 3 (volcanogen massifs) overlaps a little with other groups, and Group 4 (metamorphic regions) is quite separate on LD2. The ellipses are *fairly* similar in shape and orientation, which supports the equal covariance assumption, and the clear separation of some groups suggests LDA should work reasonably well here.
+We can see from the LDA plot distinct shapes and orientations in ellipses representing the covariance of the groups.
+Given the clear differences between these groups, the covariance matrices of the groups cannot be equal and LDA is not appropriate 
+for this data. While the classes do appear to be linearly seperable, the assumption of equal covariance is clearly failed when looking at the distinction in the shape and orientation between each group.
 
 ## Correlation matrix - Harry
 
