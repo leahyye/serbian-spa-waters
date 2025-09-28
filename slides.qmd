@@ -1,1 +1,22 @@
+---
+title: "slides"
+format: revealjs
+editor: visual
+---
+
+## Serbian Spa Waters
+
+Drink water 
+
+## Greetings
+
+hi frens
+
+## Bye
+
+that's it 
+```{r}
+520
+```
+
 
