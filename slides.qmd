@@ -20,11 +20,36 @@ Spa details here
 
 ## Pairs plot
 
+## Insert cool plot here
+```{r}
+library(ggplot2)
+
+# made-up data
+df <- data.frame(
+  Category = c("A", "B", "C", "D"),
+  Value = c(42, 67, 89, 55)   # you can change these numbers
+)
+
+# cool plot
+ggplot(df, aes(x = Category, y = Value, fill = Category)) +
+  geom_col(color = "steelblue") +
+  geom_text(aes(label = Value), vjust = -0.5, size = 5) +
+  scale_fill_viridis_d(option = "plasma") +
+  labs(
+    title = "Cool Test Plot with Made-up Data",
+    x = "Category",
+    y = "Value"
+  ) +
+  theme_minimal(base_size = 14)
+```
+wow that plot is so cool and interpreting it would be fun
+
+
+
 ## Bye
 
 that's it 
 ```{r}
 520
 ```
-
 
