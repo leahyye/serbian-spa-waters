@@ -42,7 +42,7 @@ The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 
 Where Ions$(HCO_3^−, Ca^{2+}, Mg^{2+}, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.
 
-Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations.
+Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations. This is an unbalanced dataset since there are varying observations per group. 
 
 There are no duplicates, missing data, zeros, negatives, NAs or NULL values in the dataset.
 
@@ -357,32 +357,31 @@ plot(pca_fit, type="l")
 -   PC1 explains most of the variance (around 4)\
 -   PC2 explains a fair part of the variance
 -   At PC3 and 4, the extra variance explained is a bit less\
--   From PC5, the line starts to flatten\
--   Each additional component after PC5 only adds a tiny bit of variance.
+-   From PC4, the line starts to flatten\
+-   Each additional component after PC4 only adds a tiny bit of variance.
 
 ```{r echo=FALSE, PC-Summary-tab}
 summary(pca_fit)
 ```
 
--   PC1 has a standard deviation of 2.05, and explains 35.1% of the variance
--   PC2 adds 17.6%, and explains 52.6% of the variance
--   PC3 adds 12.4%, and explains 65.0% of the variance\
--   PC4 adds 9.7%, and explains 74.7% of the variance
--   After PC4 onwards, each PC explains less than 9% of the extra variance
--   PC5 explains 83.2% of the variance
--   PC6 explains 90.5% of the variance
--   PC9 explains the most variance (99.1%)
+-   PC1 has a standard deviation of 2.41, and explains 48.4% of the variance
+-   PC2 adds 17.9%, and explains 66.4% of the variance
+-   PC3 adds 10.8%, and explains 77.2% of the variance
+-   PC4 adds 7.79%, and explains 84.97% of the variance
+-   From PC5 and onwards, each PC explains less than 7% of the extra variance
+
+Using 4 Principal Components would be sufficient in the model.
 
 ```{r}
 pca_fit
 ```
 
--   In PC1, $HCO_3^-(-0.447), Na^+(-0.408), elecCond(-0.394), K^+(-0.399), totSolid(-0.350)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with a more negative score are more mineralised waters, whereas samples with a more positive score are more dilute waters.
--   PC2: $Mg^{2+}(0.507), Ca^{2+}(-0.195), tempCels(-0.473), pH(-0.302)$, have the strongest influence. PC2 separates water with high Calcium and Magnesium(hardness) from waters at higher temperatures and pH(alkalinity). This could mean that there is a difference between hard, cold waters and warmer, alkaline waters.\
--   PC3: $SiO_2(-0.473), SO^{2−}_4(-0.292), Cl^−(0.406), totSolid(0.277)$ have the strongest influence. Waters that have more Silica and Sulfate have less chloride and mineralisation.\
--   PC4: $SiO_2(0.383), Ca^{2+}(-0.315), Cl^−(0.505), totSolid(0.446)$ have the strongest influence. Waters with more sulfate, chlorine and mineralisation have less calcium.
+-   In PC1, $HCO_3^-(0.388), Na^+(0.345), elecCond(0.378), K^+(0.376), totSolid(0.367)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with high PC1 scores have high mineralisation. 
+-   PC2: $Mg^{2+}(0.438), Ca^{2+}(0.55), tempCels(-0.329), SiO_2(-0.352,), Na^+(-0.301)$, have the strongest influence. PC2 separates water with high Calcium and Magnesium(hardness) from waters at higher temperatures. This could mean that there is a difference between hard, cold waters and warmer waters.\
+-   PC3: $SO_2(0.717), tempCels(0.521)$ have the strongest influence. Waters that have more Sulfate are warmer.\
+-   PC4: $SiO_2(-0.611), Cl^−(0.676), tempCels(0.302)$ have the strongest influence. Waters with higher chlorine levels have less Silicone and are warmer. 
 
-# Surprising Observations - Harry/Claude
+# Surprising Observations
 
 ```{r}
 # Standardise numeric variables
@@ -414,20 +413,98 @@ scores <- as.data.frame(pca_result$x)
 scores$waterSource <- data$waterSource
 scores$geoStruct <- as.factor(data$geoStruct)
 
-# Plot PC1 vs PC2, coloured by geological structure
-ggplot(scores, aes(x = PC1, y = PC2, colour = geoStruct, label = waterSource)) +
-  geom_point(size = 3) +
-  geom_text(aes(label = ifelse(abs(PC1) > 3 | abs(PC2) > 3, waterSource, "")),
-            vjust = -0.5, size = 3) +
-  labs(title = "PCA score plot: PC1 vs PC2",
-       x = "PC1 (overall mineralisation)",
-       y = "PC2 (hardness vs temp/pH)")
+pca_plot_data <- data.frame(
+  PC1 = pca_result$x[, 1],
+  PC2 = pca_result$x[, 2],
+  Geological_Group = as.factor(data$geoStruct),
+  Water_Source = data$waterSource 
+)
+
+# PC2 vs PC1
+ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.5) +
+  stat_ellipse(level = 0.95, alpha = 0.7) +  
+  labs(
+    title = "PCA: PC2 vs PC1",
+    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
+    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"),
+    color = "Geological\nStructure"
+  ) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "right")
 ```
 
 From the standardised $n=30$ observations, five springs are flagged as clear outliers: Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites has at least one measurement more than three standard deviations from the mean. Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate ($3360$ mg/L). Vranjska stands out for its near-boiling temperature ($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels relative to the rest of the dataset. These five cases are the most “surprising” when the dataset is examined variable by variable.
 
 The PCA score plot gives a multivariate view, showing which sites are extreme in terms of their overall chemical profiles rather than a single ion. Along the first principal component (PC1, representing overall mineralisation), Ribarska and Prolom score strongly negative, indicating highly mineralised waters, while Kanjiža lies on the opposite end with a very dilute profile. Along the second principal component (PC2, contrasting hardness with temperature/pH), Vuča sits at the upper extreme with unusually high hardness, whereas Prolom and Ribarska again fall at the lower end, consistent with warmer, more alkaline waters. Thus, while the z-score analysis highlights individual extremes, the PCA identifies different sites as “surprising” because of their distinctive multivariate signatures.
 
-# Factor Analysis - do in W11
+* Groups 1(Hydrological Basin), 2(Karstic terrains), and 4(Metamorphic Regions) have clusters within Group 3(Volcanogen Massifs). 
+* Group 2 has the smallest cluster within Group 3.  
+* Group 1 and 4(small cluster) overlap within Group 3.   
+* Group 3's cluster is a wide spread. 
 
-# geoStruct groups - answer
+
+
+# Factor Analysis
+
+Factor analysis is a model estimation which deals with the assumptions of underlying causal structure, whereas PCA was a data transformation. 
+
+Assumptions:  
+* Covariation in the observed variables is due to the presence of one or more factors (latent variables) that exert causal influence on these observed variables. 
+
+PCA does not make such assumptions but both PCA and FA do not have a dependent variable to be explained by independent variables. 
+
+Hypotheses: There are unobserved variables that explain the observations. 
+
+```{r}
+library(dplyr)
+X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
+
+pvalues <- rep(0, 5)
+for(f in 1:5)
+  pvalues[f] <- factanal(X.log, factors = f)$PVAL
+  ggplot(data.frame(pvalues), aes(x=1:5, y=pvalues)) +
+  geom_point(size=3) +
+  xlab("Number of factors")
+```
+
+$H_0:$ k factors are sufficient  
+$H_1:$ More than k factors are needed
+
+5 factors is sufficient as p-value is > 0.05. 4 or less factors is not sufficient (p-values < 0.03).
+
+```{r}
+faresult <- factanal(X.log, factors=5)
+faresult
+```
+
+Factor 5 explains 82.4% of the total variance. Factor 5's loading is small (0.379). So we will go back to four factors, and visualize the result.
+
+```{r}
+library(psych)
+fa.diagram(faresult$loadings, digits=4)
+```
+
+The red arrows indicate negative variables.  
+
+* F1: Total Solid (+), Electrical Conductivity (+), Na (+), HCO (+), K (+), SiO (+).  
+* F2: Mg2 (+), Ca2 (+), pH (-), tempCels (-).
+* F3: Cl (+).  
+* F4: SO2 (+).
+
+Factor analysis selected 4 factors with 79% variance explained. Whereas PCA preferred 4 PCs with 85% variance explained. The factors show that there are 3 water types:
+
+* F1: Highly mineralised waters (high soliditity and electrical conductivity)  
+* F2: Magenesium, Calcium (hardness ions), acidic and cool waters  
+* F3: Chloric waters.  
+* F4: Sulfate waters. 
+
+Factor analysis is better for model selection since it doesn't include noise like PCA (that's why PCA variance for 4 PCs was greater than FA 4 factors cumulative variance), and maintains parsimony. PCA had to consider all 12 Principal Components, whereas FA only had to look at 5 or less factors for determining the underlying structure of spa water composition. 
+
+
+# geoStruct groups 
+
+
