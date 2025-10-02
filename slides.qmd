@@ -1,7 +1,15 @@
 ---
 title: "Serbian Spa Waters"
-format: revealjs
+format: revealjs:
+  transition: slide
+  background-transition: fade
+  slideNumber: "c/t" # show slide number
+  progress: true
+  self-contained: true
+  theme: simple
 editor: visual
+bibliography:
+  # i think this is where u add references
 ---
 
 ## Group 6
