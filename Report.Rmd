@@ -42,7 +42,7 @@ The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 
 Where Ions$(HCO_3^−, Ca^{2+}, Mg^{2+}, Na^+, K^+, Cl^−, SO^{2−}_4, SiO_2)$ were analysed in the laboratories of Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.
 
-Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations. This is an unbalanced dataset since there are varying observations per group. 
+Where Hyodrological Basins and Karstic terrains have 5 observations each, Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 observations. This is an unbalanced dataset since there are varying observations per group.
 
 There are no duplicates, missing data, zeros, negatives, NAs or NULL values in the dataset.
 
@@ -319,9 +319,7 @@ ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
   theme_minimal()
 ```
 
-We can see from the LDA plot distinct shapes and orientations in ellipses representing the covariance of the groups.
-Given the clear differences between these groups, the covariance matrices of the groups cannot be equal and LDA is not appropriate 
-for this data. While the classes do appear to be linearly seperable, the assumption of equal covariance is clearly failed when looking at the distinction in the shape and orientation between each group.
+We can see from the LDA plot distinct shapes and orientations in ellipses representing the covariance of the groups. Given the clear differences between these groups, the covariance matrices of the groups cannot be equal and LDA is not appropriate for this data. While the classes do appear to be linearly seperable, the assumption of equal covariance is clearly failed when looking at the distinction in the shape and orientation between each group.
 
 ## Correlation matrix - Harry
 
@@ -343,7 +341,6 @@ corrplot(cor_mat,
 
 Electrical conductivity, total solids, sodium, potassium, and chloride form a strongly correlated cluster, indicating they vary together across spa waters. In contrast, pH shows moderate negative correlations with several ions (e.g., Ca²⁺, Mg²⁺, HCO₃⁻), suggesting different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
 
-## Eigenvalues - Harry/Claude
 
 ## PCA - Leah
 
@@ -375,10 +372,10 @@ Using 4 Principal Components would be sufficient in the model.
 pca_fit
 ```
 
--   In PC1, $HCO_3^-(0.388), Na^+(0.345), elecCond(0.378), K^+(0.376), totSolid(0.367)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with high PC1 scores have high mineralisation. 
+-   In PC1, $HCO_3^-(0.388), Na^+(0.345), elecCond(0.378), K^+(0.376), totSolid(0.367)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with high PC1 scores have high mineralisation.
 -   PC2: $Mg^{2+}(0.438), Ca^{2+}(0.55), tempCels(-0.329), SiO_2(-0.352,), Na^+(-0.301)$, have the strongest influence. PC2 separates water with high Calcium and Magnesium(hardness) from waters at higher temperatures. This could mean that there is a difference between hard, cold waters and warmer waters.\
 -   PC3: $SO_2(0.717), tempCels(0.521)$ have the strongest influence. Waters that have more Sulfate are warmer.\
--   PC4: $SiO_2(-0.611), Cl^−(0.676), tempCels(0.302)$ have the strongest influence. Waters with higher chlorine levels have less Silicone and are warmer. 
+-   PC4: $SiO_2(-0.611), Cl^−(0.676), tempCels(0.302)$ have the strongest influence. Waters with higher chlorine levels have less Silicone and are warmer.
 
 # Surprising Observations
 
@@ -440,23 +437,21 @@ From the standardised $n=30$ observations, five springs are flagged as clear out
 
 The PCA score plot gives a multivariate view, showing which sites are extreme in terms of their overall chemical profiles rather than a single ion. Along the first principal component (PC1, representing overall mineralisation), Ribarska and Prolom score strongly negative, indicating highly mineralised waters, while Kanjiža lies on the opposite end with a very dilute profile. Along the second principal component (PC2, contrasting hardness with temperature/pH), Vuča sits at the upper extreme with unusually high hardness, whereas Prolom and Ribarska again fall at the lower end, consistent with warmer, more alkaline waters. Thus, while the z-score analysis highlights individual extremes, the PCA identifies different sites as “surprising” because of their distinctive multivariate signatures.
 
-* Groups 1(Hydrological Basin), 2(Karstic terrains), and 4(Metamorphic Regions) have clusters within Group 3(Volcanogen Massifs). 
-* Group 2 has the smallest cluster within Group 3.  
-* Group 1 and 4(small cluster) overlap within Group 3.   
-* Group 3's cluster is a wide spread. 
-
-
+-   Groups 1(Hydrological Basin), 2(Karstic terrains), and 4(Metamorphic Regions) have clusters within Group 3(Volcanogen Massifs).
+-   Group 2 has the smallest cluster within Group 3.\
+-   Group 1 and 4(small cluster) overlap within Group 3.\
+-   Group 3's cluster is a wide spread.
 
 # Factor Analysis
 
-Factor analysis is a model estimation which deals with the assumptions of underlying causal structure, whereas PCA was a data transformation. 
+Factor analysis is a model estimation which deals with the assumptions of underlying causal structure, whereas PCA was a data transformation.
 
-Assumptions:  
-* Covariation in the observed variables is due to the presence of one or more factors (latent variables) that exert causal influence on these observed variables. 
+Assumptions:\
+\* Covariation in the observed variables is due to the presence of one or more factors (latent variables) that exert causal influence on these observed variables.
 
-PCA does not make such assumptions but both PCA and FA do not have a dependent variable to be explained by independent variables. 
+PCA does not make such assumptions but both PCA and FA do not have a dependent variable to be explained by independent variables.
 
-Hypotheses: There are unobserved variables that explain the observations. 
+Hypotheses: There are unobserved variables that explain the observations.
 
 ```{r}
 library(dplyr)
@@ -470,10 +465,10 @@ for(f in 1:5)
   xlab("Number of factors")
 ```
 
-$H_0:$ k factors are sufficient  
+$H_0:$ k factors are sufficient\
 $H_1:$ More than k factors are needed
 
-5 factors is sufficient as p-value is > 0.05. 4 or less factors is not sufficient (p-values < 0.03).
+5 factors is sufficient as p-value is \> 0.05. 4 or less factors is not sufficient (p-values \< 0.03).
 
 ```{r}
 faresult <- factanal(X.log, factors=5)
@@ -487,23 +482,32 @@ library(psych)
 fa.diagram(faresult$loadings, digits=4)
 ```
 
-The red arrows indicate negative variables.  
+The red arrows indicate negative variables.
 
-* F1: Total Solid (+), Electrical Conductivity (+), Na (+), HCO (+), K (+), SiO (+).  
-* F2: Mg2 (+), Ca2 (+), pH (-), tempCels (-).
-* F3: Cl (+).  
-* F4: SO2 (+).
+-   F1: Total Solid (+), Electrical Conductivity (+), Na (+), HCO (+), K (+), SiO (+).\
+-   F2: Mg2 (+), Ca2 (+), pH (-), tempCels (-).
+-   F3: Cl (+).\
+-   F4: SO2 (+).
 
 Factor analysis selected 4 factors with 79% variance explained. Whereas PCA preferred 4 PCs with 85% variance explained. The factors show that there are 3 water types:
 
-* F1: Highly mineralised waters (high soliditity and electrical conductivity)  
-* F2: Magenesium, Calcium (hardness ions), acidic and cool waters  
-* F3: Chloric waters.  
-* F4: Sulfate waters. 
+-   F1: Highly mineralised waters (high soliditity and electrical conductivity)\
+-   F2: Magenesium, Calcium (hardness ions), acidic and cool waters\
+-   F3: Chloric waters.\
+-   F4: Sulfate waters.
 
-Factor analysis is better for model selection since it doesn't include noise like PCA (that's why PCA variance for 4 PCs was greater than FA 4 factors cumulative variance), and maintains parsimony. PCA had to consider all 12 Principal Components, whereas FA only had to look at 5 or less factors for determining the underlying structure of spa water composition. 
+Factor analysis is better for model selection since it doesn't include noise like PCA (that's why PCA variance for 4 PCs was greater than FA 4 factors cumulative variance), and maintains parsimony. PCA had to consider all 12 Principal Components, whereas FA only had to look at 5 or less factors for determining the underlying structure of spa water composition.
 
+# geoStruct groups
+Visual inspection of the LDA ellipses indicates heterogeneity of covariance structures across geostructural groups, violating a key assumption of LDA.
+Given this, QDA is a more appropriate choice since it allows group-specific covariance matrices. We therefore fit both LDA and QDA and compare their classification performance
 
-# geoStruct groups 
+```{r}
+# build analysis 
+y  <- factor(data$geoStruct)                       # 4 classes
+Xl <- as.data.frame(X_log_matrix)  
+# scale the data
+Xl <- as.data.frame(scale(Xl))
 
+```
 
