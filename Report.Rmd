@@ -454,15 +454,20 @@ PCA does not make such assumptions but both PCA and FA do not have a dependent v
 Hypotheses: There are unobserved variables that explain the observations.
 
 ```{r}
-library(dplyr)
 X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
 
-pvalues <- rep(0, 5)
-for(f in 1:5) # get the p-values for each factor
+pvalues <- rep(0, 5) 
+for(f in 1:5) {   # get p-values for each factor
   pvalues[f] <- factanal(X.log, factors = f)$PVAL
-  ggplot(data.frame(pvalues), aes(x=1:5, y=pvalues)) +
-  geom_point(size=3) +
-  xlab("Number of factors")
+}
+
+ggplot(data.frame(Factors = 1:5, pvalues = pvalues), 
+       aes(x = Factors, y = pvalues)) +
+  geom_point(size = 3) +
+  geom_line() +
+  xlab("Number of Factors") +
+  ylab("p-value") +
+  labs(title = "Factor Adequacy Test")
 ```
 
 $H_0:$ k factors are sufficient\
@@ -470,7 +475,7 @@ $H_1:$ More than k factors are needed
 
 5 factors is sufficient as p-value is \> 0.05. 4 or less factors is not sufficient (p-values \< 0.03).
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(psych)
 faresult <- factanal(X.log, factors=5)
 faresult
