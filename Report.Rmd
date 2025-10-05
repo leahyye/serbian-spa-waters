@@ -289,6 +289,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
 
 ```{r}
 par(mfrow = c(3, 4)) # Arrange plots in a 3x4 grid for 12 variables
+X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
 
 for (i in 1:ncol(X.log)) {
   qqnorm(X.log[, i], main = names(X.log)[i])
@@ -301,7 +302,7 @@ p-value \> 0.05 suggests normality
 2.  Check Multivariate normality (Linear combinations)
 
 ```{r echo=FALSE}
-X_log_matrix <- as.matrix(X.log[,-which(names(X.log) == ".row")]) # Remove the .row column for analysis
+X_log_matrix <- as.matrix(X.log)
 
 # Fit MANOVA model
 fit_log <- manova(X_log_matrix ~ data$geoStruct)
@@ -356,9 +357,7 @@ ggplot(pca_scores, aes(x = PC1, y = PC2, color = factor(geoStruct))) +
   theme_minimal()
 ```
 
--   Groups seems to be intermingled, but within this there are clear clusters.\
--   Group 2(Karstic terrains) and 4(Metamorphic Regions) has clear groupings.\
--   There is some linear separability.
+-   Groups seems to be intermingled, and there is no Linear Separability\
 
 2.  Check Equality of Covariance Matrices
 
@@ -388,7 +387,9 @@ ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
   theme_minimal()
 ```
 
-We can see from the LDA plot distinct shapes and orientations in ellipses representing the covariance of the groups. Given the clear differences between these groups, the covariance matrices of the groups cannot be equal and LDA is not appropriate for this data. While the classes do appear to be linearly separable, the assumption of equal covariance is clearly failed when looking at the distinction in the shape and orientation between each group.
+We can see from the LDA plot distinct shapes and orientations in ellipses representing the covariance of the groups. While the centers are separated, the ellipses overlap. 
+
+Given the clear differences between these groups, the covariance matrices of the groups cannot be equal and LDA is not appropriate for this data. The assumption of equal covariance is clearly failed when looking at the distinction in the shape and orientation between each group.
 
 ## Correlation matrix - Harry
 
