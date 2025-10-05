@@ -69,78 +69,24 @@ editor: visual
 
 - Unbalanced data set
 
-# Pairs plot
 
-```{r pairs_plot2, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, dpi=150, out.width='90%', out.height='90%'}
+# Correlation Heatmap
+
+```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=1, out.width='90%', out.height='80%'}
+library(corrplot)
+library(dplyr)
 library(GGally)
+
 
 data <- read.csv("serbianspawater.csv")
 
 numeric_cols <- data[sapply(data, is.numeric) & !(names(data) %in% c("idNum", "geoStruct"))]
-
-pairs_plot <- ggpairs(
-  numeric_cols,
-  
-  upper = list(
-    continuous = wrap(
-      "cor",
-      size = 5,
-      color = "black",
-      alignPercent = 0.9,
-      theme = theme_void() 
-    )
-  ),
-  
-  lower = list(
-    continuous = wrap(
-      "points",
-      alpha = 0.6,
-      size = 1,
-      theme = theme(
-        panel.background = element_rect(fill = "white"),
-        panel.border = element_rect(color = "black", fill = NA),
-        panel.grid.major = element_line(color = "grey90", size = 0.3),
-        panel.grid.minor = element_blank()
-      )
-    )
-  ),
-  
-  diag = list(
-    continuous = wrap(
-      "densityDiag",
-      alpha = 0.4,
-      fill = "#046C9A",
-      # clean theme
-      theme = theme(
-        panel.background = element_rect(fill = "white"),
-        panel.border = element_rect(color = NA),
-        panel.grid = element_blank()
-      )
-    )
-  )
-) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
-    axis.text.y = element_text(size = 10, color = "black"),
-    strip.text  = element_text(size = 12, color = "black"),
-    strip.background = element_rect(fill = "white", color = NA)
-  )
-
-print(pairs_plot)
-```
-
-# Correlation Heatmap
-
-```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
-library(corrplot)
-library(dplyr)
-
 # Select numeric features for scaling 
 X <- data[, 3:14]                    #all numerical categories
 X <- as.data.frame(scale(X))         # z-scores per variable
-X$.row <- 1:nrow(X)
+#X$.row <- 1:nrow(X)
 
-par(family = "serif")
+par(family = "Times")
 cor_mat <- cor(X, use = "pairwise.complete.obs", method = "pearson")
 corrplot(cor_mat,
          method = "color",        

@@ -85,7 +85,7 @@ This dataset is characterized by high variability. This is likely due to the dif
 
 ## Pairs Plot - Liz
 
-```{r pairs_plot2, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=16, fig.height=16, dpi=150, out.width='100%'}
+```{r pairs_plot2, echo=FALSE, eval = FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=16, fig.height=16, dpi=150, out.width='100%'}
 
 pairs_plot <- ggpairs(
   numeric_cols,
@@ -181,8 +181,8 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
   coord_flip() +
   scale_fill_manual(values = colors) + 
-  labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Serbian Spa Waters: Boxplots of All Variables (Z-scored)") +
+  labs(x = NULL, y = "Scaled value",
+       title = "Serbian Spa Waters: Boxplots of All Variables") +
   theme_minimal(base_family = "Times New Roman") + 
   theme(
     panel.grid.major = element_line(color = "grey80", size = 0.3),
@@ -398,6 +398,7 @@ Given the clear differences between these groups, the covariance matrices of the
 
 ```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 par(family = "serif")
+X <- X[, !names(X) == ".row"] # remove '.row' column
 cor_mat <- cor(X, use = "pairwise.complete.obs", method = "pearson")
 corrplot(cor_mat,
          method = "color",        
@@ -706,7 +707,7 @@ ggplot(cm_table, aes(x = True, y = Predicted, fill = Freq)) +
   coord_fixed()  
 ```
 
-```{r, warning=false}
+```{r warning=FALSE}
 pred <- factor(pred, levels = levels(y))
 y    <- factor(y, levels = levels(y))
 
