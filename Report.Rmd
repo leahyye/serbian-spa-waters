@@ -18,7 +18,7 @@ library(kableExtra)
 
 # **Introduction & Background** - Liz
 
-This study analyzed hydrochemical data for mineral and thermal waters in Serbian territory. The authors used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability among the observations. Two of these four PCs are based on measures of mineralization of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity. The results of HCA achieved a total correct classification of 83.3% for predefined geotectonic units, and the dendogram produced classified the samples into four major groups and eleven subgroups.
+This study analyzed hydrochemical data for mineral and thermal waters in Serbian territory. The authors used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability among the observations. Two of these four PCs are based on measures of mineralization of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity. The results achieved a total correct classification of 83.3% for predefined geotectonic units, and the dendogram produced classified the samples into four major groups and eleven subgroups.
 
 # **Descriptive analysis of the data** - Leah
 
@@ -80,34 +80,75 @@ kable(summary_formatted, caption = "Summary Statistics for Numeric Columns", ali
 
 This dataset is characterized by high variability. This is likely due to the different water sources. pH is more consistent, ranging from neutral (6.5) to slightly basic (9.0), which are fairly typical values for water in nature. The range of temperatures recorded in this dataset is from 14.40 to 95.00 degrees celcius. The large standard deviation confirms that there is a lot of variability in temperature. Some of these water sources are near boiling temperatures. Electrical conductivity also has a very large range, from 110.00 to 5100.00 $\mu$S/cm. This indicates that some water samples have a lot of dissolved ions, leading to high conductivity. This measure is roughly proportional to the total dissolved solids, which also displays a large range, from 0.10 to 6.20. The maximum is more than three standard deviations above the mean, suggesting right-skew and surprising observations. There are eight major ions in this dataset: Calcium ($Ca^{2+}$), Magnesium ($Mg^{2+}$), Sodium (\$Na\^+ $), Potassium ($K^+^$), Chloride ($CI-$), Sulfate ($SO\^{-2}\_4$), Bicarbonate ($HCO\^-\_3$), and Silica ($SiO_2\$). All of them are characterized by high variability, often with right-skew. Calcium has a mean of 61.02 and a range of 4.00 to 178.00. The maximum is three standard deviations above the mean. Magnesium has an average of 44.46 and a range of 0.10 to 293.00, with a maximum that is four standard deviations above the mean. Sodium has a high average of 447.09, and a high maximum of 2280.00, which is again three standard deviations above the mean. Potassium is not as elevated with a mean of 16.58, but it is still somewhat variable. Chloride has a particularly extreme maximum of 1560.00, which is five standard deviations above its mean of 108.70. Sulfate has a mean of 57.53 and a maximum of 486.00, which is four standard deviations above the mean. Bicarbonate has a very high mean of 1297.91, and the maximum reaches a staggering 3538.00. The last major ion is Silica, which has a mean of 38.73, but a range from 2.00 to 120.00. To summarize, the whole dataset show high variability and pervasive right-skewness. The chemical composition of the water samples is largely dominated by bicarbonate, with sodium and chloride also reaching very high values for some samples.
 
-[do we need a covariance matrix? - leah]
-
 # **Graphical analysis**
 
 ## Pairs Plot - Liz
 
-```{r pairs_plot, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=16, fig.height=16, dpi=150, out.width='100%'}
-library(GGally)
+```{r pairs_plot2, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=16, fig.height=16, dpi=150, out.width='100%'}
 
 pairs_plot <- ggpairs(
   numeric_cols,
-  upper = list(continuous = wrap("cor", size = 3, color = "black")),
-  lower = list(continuous = wrap("points", alpha = 0.5, size = 0.8)),
-  diag  = list(continuous = wrap("densityDiag", alpha = 0.4))
+  
+  upper = list(
+    continuous = wrap(
+      "cor",
+      size = 5,
+      color = "black",
+      alignPercent = 0.9,
+      theme = theme_void() 
+    )
+  ),
+  
+  lower = list(
+    continuous = wrap(
+      "points",
+      alpha = 0.6,
+      size = 1.5,
+      # theme specifically for lower panels
+      theme = theme(
+        panel.background = element_rect(fill = "white"),
+        panel.border = element_rect(color = "black", fill = NA),
+        panel.grid.major = element_line(color = "grey90", size = 0.3),
+        panel.grid.minor = element_blank()
+      )
+    )
+  ),
+  
+  diag = list(
+    continuous = wrap(
+      "densityDiag",
+      alpha = 0.4,
+      fill = "#046C9A",
+      # clean theme
+      theme = theme(
+        panel.background = element_rect(fill = "white"),
+        panel.border = element_rect(color = NA),
+        panel.grid = element_blank()
+      )
+    )
+  )
 ) +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 7, color = "black"),
-    axis.text.y = element_text(size = 7, color = "black"),
-    strip.text  = element_text(size = 8, color = "black")
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12, color = "black"),
+    axis.text.y = element_text(size = 12, color = "black"),
+    strip.text  = element_text(size = 14, color = "black"),
+    strip.background = element_rect(fill = "white", color = NA)
   )
 
 pairs_plot
 
 # Save as PNG
-ggsave("full_pairs_plot_points_bigger.png", plot = pairs_plot, width = 25, height = 25, units = "in", dpi = 300)
+ggsave(
+  "full_pairs_plot_points_bigger_final.png", 
+  plot = pairs_plot, 
+  width = 25, 
+  height = 25, 
+  units = "in", 
+  dpi = 300
+)
 ```
 
--   All histograms show non-normality (not bell shaped)
+- All histograms show non-normality (not bell shaped)
 
 ## Box Plot - Harry
 
@@ -266,6 +307,7 @@ summary(fit_log, test = "Hotelling-Lawley") # If anyone remembers the actual tes
 -   P-value is 0.05712, so there is not enough evidence to conclude that the multivariate means of geoStruc groups are statistically different from each other.
 
 **Multivariate Normality assumptions are satisfied**\
+
 1. Each variable is normally distributed(univariate normality), and\
 2. Each linear combination of the variables is normally distributed
 
@@ -319,7 +361,7 @@ ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
   theme_minimal()
 ```
 
-We can see from the LDA plot distinct shapes and orientations in ellipses representing the covariance of the groups. Given the clear differences between these groups, the covariance matrices of the groups cannot be equal and LDA is not appropriate for this data. While the classes do appear to be linearly seperable, the assumption of equal covariance is clearly failed when looking at the distinction in the shape and orientation between each group.
+We can see from the LDA plot distinct shapes and orientations in ellipses representing the covariance of the groups. Given the clear differences between these groups, the covariance matrices of the groups cannot be equal and LDA is not appropriate for this data. While the classes do appear to be linearly separable, the assumption of equal covariance is clearly failed when looking at the distinction in the shape and orientation between each group.
 
 ## Correlation matrix - Harry
 
@@ -444,7 +486,7 @@ The PCA score plot gives a multivariate view, showing which sites are extreme in
 
 # Factor Analysis
 
-Factor analysis is a model estimation which deals with the assumptions of underlying causal structure, whereas PCA was a data transformation.
+Factor analysis is a model estimation which deals with the assumptions of underlying causal structure, whereas PCA is a data transformation.
 
 Assumptions:\
 \* Covariation in the observed variables is due to the presence of one or more factors (latent variables) that exert causal influence on these observed variables.
@@ -454,11 +496,15 @@ PCA does not make such assumptions but both PCA and FA do not have a dependent v
 Hypotheses: There are unobserved variables that explain the observations.
 
 ```{r}
+library(psych)
 X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
 
 pvalues <- rep(0, 5) 
-for(f in 1:5) {   # get p-values for each factor
-  pvalues[f] <- factanal(X.log, factors = f)$PVAL
+for(f in 1:5) {
+  res <- try(factanal(X.log, factors = f), silent = TRUE) # get the p-values for each factor
+  if(!inherits(res, "try-error")) {
+    pvalues[f] <- res$PVAL
+  }
 }
 
 ggplot(data.frame(Factors = 1:5, pvalues = pvalues), 
@@ -476,7 +522,6 @@ $H_1:$ More than k factors are needed
 5 factors is sufficient as p-value is \> 0.05. 4 or less factors is not sufficient (p-values \< 0.03).
 
 ```{r warning=FALSE, message=FALSE}
-library(psych)
 faresult <- factanal(X.log, factors=5)
 faresult
 ```
