@@ -29,7 +29,7 @@ This study analyzed hydrochemical data for mineral and thermal waters in
 Serbian territory. The authors used principal component analysis (PCA) and 
 hierarchical cluster analysis (HCA) to characterize the chemical composition 
 and natural radioactivity of these water samples, understand the relationships 
-between the variables measured, and classify the waters with respect to their                  
+between the variables measured, and classify the waters with respect to their 
 geotectonic units. PCA revealed four latent factors that accounted for 74.2% of 
 the variability among the observations. Two of these four PCs are based on 
 measures of mineralisation of the components of the host rock, and the other 
@@ -346,8 +346,6 @@ plot(pca_fit, type = "l", main = "Fig. 6: PCA elbow plot for Serbian spa data")
 
 ```
 ```{r PCA-summary-table, echo=FALSE, message=FALSE, warning=FALSE}
-# Perform PCA
-pca_fit <- prcomp(X_log_matrix, center = TRUE, scale. = TRUE)
 
 # Extract summary and convert to data frame
 pca_summary <- summary(pca_fit)$importance
@@ -441,48 +439,64 @@ relative to the rest of the dataset. These five cases are the most “surprising
 when the dataset is examined variable by variable.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-# Multivariate check: Mahalanobis distances
+# Mahalanobis distances
 mu <- colMeans(X)
 S  <- cov(X)
 d2 <- mahalanobis(X, center = mu, cov = S)
+cut <- qchisq(0.95, df = ncol(X))
+outliers <- d2 > cut
 
-# Flag all sites with distance above the chi-square 99.9% cutoff
-cut <- qchisq(0.999, df = ncol(X))
-which(d2 > cut)
-data[d2 > cut, c("waterSource", "tempCels", "elecCond", "totSolid",
-                 "Na", "Cl", "HCO")]
-
-# PCA on the log-transformed variables (already created earlier)
-pca_result <- prcomp(X_log_matrix, scale. = TRUE)
-
-# Get the scores for the first two PCs
-scores <- as.data.frame(pca_result$x)
-scores$waterSource <- data$waterSource
-scores$geoStruct <- as.factor(data$geoStruct)
-
+# Add to PCA plot data
 pca_plot_data <- data.frame(
-  PC1 = pca_result$x[, 1],
-  PC2 = pca_result$x[, 2],
+  PC1 = pca_fit$x[, 1],
+  PC2 = pca_fit$x[, 2],
   Geological_Group = as.factor(data$geoStruct),
-  Water_Source = data$waterSource 
+  Water_Source = data$waterSource,
+  Outlier = outliers
 )
 
-# PC2 vs PC1
+# Plot
 ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
   geom_point(size = 4, alpha = 0.8) +
+  # Highlight outliers
+  geom_point(data = subset(pca_plot_data, Outlier), 
+             aes(x = PC1, y = PC2), 
+             shape = 21, fill = "yellow", color = "orange", size = 4, stroke = 1.2) +
+  geom_text(data = subset(pca_plot_data, Outlier),
+            aes(label = Water_Source),
+            color = "black",
+  size = 3.5, max.overlaps = 15, box.padding = 0.5, point.padding = 0.2) +
   geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
   geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.5) +
   stat_ellipse(level = 0.95, alpha = 0.7) +  
   labs(
-    title = "Fig. 7: PC2 vs PC1",
-    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
-    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"),
+    title = "Fig. 7: PC2 vs PC1 with outliers",
+    x = paste0("PC1 (", round(summary(pca_fit)$importance[2,1]*100, 1), "%)"),
+    y = paste0("PC2 (", round(summary(pca_fit)$importance[2,2]*100, 1), "%)"),
     color = "Geological\nStructure"
   ) +
   theme_minimal() +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "right")
+
 ```
+```{r echo = FALSE}
+outlier_table <- data.frame(
+  Water_Source = data$waterSource[outliers],
+  Geological_Group = data$geoStruct[outliers],
+  Mahalanobis_Distance = round(d2[outliers], 2),
+  PC1 = round(pca_fit$x[outliers, 1], 2),
+  PC2 = round(pca_fit$x[outliers, 2], 2)
+)
+
+knitr::kable(
+  outlier_table,
+  caption = "Mahalanobis Outliers with PCA Scores",
+  align = "c")%>%
+  kable_styling(latex_options = "H", position = "center")
+```
+
+
 The PCA score plot gives a multivariate view, showing which sites are extreme 
 in terms of their overall chemical profiles rather than a single ion. Along the 
 first principal component (PC1, representing overall mineralisation), Ribarska 
@@ -601,7 +615,7 @@ provides only weak evidence that the group mean vectors differ. This suggests
 that while some differences exist, they are not pronounced enough to be 
 considered statistically significant at conventional levels.
 
-```{r}
+```{r echo=FALSE}
 lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
 lda_fit <- lda(geoStruct ~ ., data = lda_data)
 lda_scores <- predict(lda_fit)$x
