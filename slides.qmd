@@ -2,7 +2,7 @@
 title: "Serbian Spa Waters"
 format:
   revealjs:
-    theme: serif
+    theme: simple
     transition: slide
     background-transition: fade
     slideNumber: "c/t" # show slide number
@@ -11,24 +11,20 @@ format:
 editor: visual
 ---
 
-## Group 6 
+# Group 6 
 
 -   Elizabeth
 -   Claude
 -   Leah
 -   Harry
 
----
-
-## Introduction
+# Introduction
 
 - Analysis of hydrochemical and radiological data of mineral and thermal waters in Serbia.
 - Original authors used PCA and HCA to classify the waters with respect to their geotectonic units. 
 - Factor analysis was used to try to improve upon the original results. 
 
----
-
-## About the dataset
+# About the dataset
 
 - 30 observations
 - 1 categorical variable
@@ -38,9 +34,7 @@ editor: visual
     - Volcanogenic massifs
     - Metamorphic regions 
   
----
-
-## 12 numerical variables 
+# 12 numerical variables 
 
 | Variable   | Description | Units |
 |------------|-------------|-------|
@@ -51,9 +45,7 @@ editor: visual
 |Ca$^{2+}$   | Calcium |mg/L|
 |Mg$^{2+}$   | Magnesium |mg/L|
 
----
-
-## 12 numerical variables
+# 12 numerical variables
 
 | Variable   | Description | Units |
 |------------|-------------|-------|
@@ -64,9 +56,7 @@ editor: visual
 |HCO$^{-}_3$ | Bicarbonate |mg/L|
 |SiO$_2$     | Silica, dissolved silicon dioxide |mg/L|
 
----
-
-## Observations per geological structure 
+# Observations per geological structure 
 
 | Geological Structure       | Number of Observations |
 |----------------------------|----------------------|
@@ -75,21 +65,243 @@ editor: visual
 | Volcanogenic Massifs       | 14                   |
 | Metamorphic Regions        | 6                    |
 
+
 - Unbalanced data set
 
+# Pairs plot
+
+```{r pairs_plot2, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, dpi=150, out.width='90%', out.height='90%'}
+library(GGally)
+
+data <- read.csv("serbianspawater.csv")
+
+numeric_cols <- data[sapply(data, is.numeric) & !(names(data) %in% c("idNum", "geoStruct"))]
+
+pairs_plot <- ggpairs(
+  numeric_cols,
+  
+  upper = list(
+    continuous = wrap(
+      "cor",
+      size = 5,
+      color = "black",
+      alignPercent = 0.9,
+      theme = theme_void() 
+    )
+  ),
+  
+  lower = list(
+    continuous = wrap(
+      "points",
+      alpha = 0.6,
+      size = 1,
+      theme = theme(
+        panel.background = element_rect(fill = "white"),
+        panel.border = element_rect(color = "black", fill = NA),
+        panel.grid.major = element_line(color = "grey90", size = 0.3),
+        panel.grid.minor = element_blank()
+      )
+    )
+  ),
+  
+  diag = list(
+    continuous = wrap(
+      "densityDiag",
+      alpha = 0.4,
+      fill = "#046C9A",
+      # clean theme
+      theme = theme(
+        panel.background = element_rect(fill = "white"),
+        panel.border = element_rect(color = NA),
+        panel.grid = element_blank()
+      )
+    )
+  )
+) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
+    axis.text.y = element_text(size = 10, color = "black"),
+    strip.text  = element_text(size = 12, color = "black"),
+    strip.background = element_rect(fill = "white", color = NA)
+  )
+
+print(pairs_plot)
+```
+
+# Correlation Heatmap
+
+```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+library(corrplot)
+library(dplyr)
+
+# Select numeric features for scaling 
+X <- data[, 3:14]                    #all numerical categories
+X <- as.data.frame(scale(X))         # z-scores per variable
+X$.row <- 1:nrow(X)
+
+par(family = "serif")
+cor_mat <- cor(X, use = "pairwise.complete.obs", method = "pearson")
+corrplot(cor_mat,
+         method = "color",        
+         type = "upper",          
+         order = "hclust",        
+         addCoef.col = "black",   
+         number.cex = 0.7,        
+         tl.col = "black",        
+         tl.srt = 45,             
+         diag = FALSE, 
+         col = colorRampPalette(c("#046C9A","white","#FD6467"))(200)
+)
+```
+
 ---
 
-## Pairs plot
+```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='95%', out.height='90%'}
+library(tidyr)
+library(wesanderson)
+library(ggplot2)
+
+# Select numeric features for scaling 
+X <- data[, 3:14]                    #all numerical categories
+X <- as.data.frame(scale(X))         # z-scores per variable
+X$.row <- 1:nrow(X)
+
+# reshaping is to long for ggplot so use tidyr library
+box_long <- pivot_longer(           #tidyr
+  X,
+  cols = - .row,
+  names_to = "variable",
+  values_to = "value"
+)
+
+colors <- c(
+  wes_palette("Darjeeling1"),     
+  wes_palette("FantasticFox1"),
+  wes_palette("Darjeeling2")    
+)
+
+colors <- colors[1:12]
+
+# boxplots on a common axis (z-scored)
+ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
+  geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
+  coord_flip() +
+  scale_fill_manual(values = colors) + 
+  labs(x = NULL, 
+       y = "Scaled value (z-score)",
+       title = "Serbian Spa Waters: Boxplots of All Variables (Z-scored)") +
+  theme_minimal(base_family = "Times New Roman") + 
+  theme(
+    plot.title = element_text(face = "bold", size = 26),  
+    axis.title = element_text(size = 20),                  
+    axis.text.x = element_text(size = 16), 
+    axis.text.y = element_text(size = 16),
+    panel.grid.major = element_line(color = "grey80", size = 0.3),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
+  )
+```
+
+# Checking for multivariate normality
+
+::::{.columns}
+
+:::{.column width="35%"}
+- Assumption of multivariate normality not satisfied
+- Log transformations needed
+:::
+
+:::{.column width="65%}
+```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+# Fit MANOVA model using geoStruct as grouping
+fit <- manova(as.matrix(X) ~ data$geoStruct)
+# Extract residuals
+res <- residuals(fit)
+# Mahalanobis distances of residuals
+mu_res <- colMeans(res)
+S_res  <- cov(res)
+d2_res <- mahalanobis(res, center = mu_res, cov = S_res)
+
+# Degrees of freedom = number of variables
+df <- ncol(res)
+
+# QQ-plot
+par(family = "serif",
+    cex.main = 2.5,
+    cex.lab = 2,
+    cex.axis = 1.8,
+    mar = c(5, 6, 4, 2))
+
+qqplot(qchisq(ppoints(nrow(res)), df = df), d2_res,
+       main = "QQ-plot of MANOVA residuals",
+       xlab = expression(paste(chi^2, " quantiles")),
+       ylab = expression(paste("Ordered residual ", d[M]^2)))
+abline(0,1,col="#046C9A", lwd = 2)
+```
+:::
+
+::::
 
 ---
 
-Insert cool plot here
+## Re-checking for normality
 
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='95%', out.height='90%'}
 
+# Log transforming numeric variables and adding them into dataset as new columns
+data$log.tempCels <- log(data$tempCels)
+data$log.pH <- log(data$pH)
+data$log.elec.Cond <- log(data$elecCond)
+data$log.totSolid <- log(data$totSolid)
+data$log.Ca2 <- log(data$Ca2)
+data$log.Mg2 <- log(data$Mg2)
+data$log.Na <- log(data$Na)
+data$log.K <- log(data$K)
+data$log.Cl <- log(data$Cl)
+data$log.SO2 <- log(data$SO2)
+data$log.HCO <- log(data$HCO)
+data$log.SiO <- log(data$SiO)
 
-wow that plot is so cool and interpreting it would be fun
+X.log <- data[, 16:27]                    # all log transformed numerical variables
+X.log <- as.data.frame(scale(X.log))         # z-scores per variable
+X.log$.row <- 1:nrow(X.log)
 
----
+box_long <- pivot_longer(           
+  X.log,
+  cols = - .row,
+  names_to = "variable",
+  values_to = "value"
+)
 
-Bye
+# not z-scored
+ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
+  geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
+  coord_flip() +
+  scale_fill_manual(values = colors) + 
+  labs(x = NULL, y = "Scaled value (z-score)",
+       title = "Serbian Spa Waters: Boxplots of All Log Transformed Variables (Z-scored)") +
+  theme_minimal(base_family = "Times New Roman") + 
+  theme(
+    panel.grid.major = element_line(color = "grey80", size = 0.3),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text = element_text(size = 12),
+    legend.position = "none"
+  )
+```
+
+```{css}
+.reveal {
+  font-family: "Times New Roman", Georgia, serif; /* main slide font */
+  background-color: white;                        /* force white background */
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+  font-family: "Times New Roman", Georgia, serif; /* headings also serif */
+}
+
+.reveal p, .reveal li {
+  font-family: "Times New Roman", Georgia, serif; /* paragraph & list text */
+}
+```
 

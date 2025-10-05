@@ -1,6 +1,6 @@
 ---
 title: "Serbian Spa Waters Report"
-author: "[GUYS ADD YOUR NAMES AND STUDENT ID HERE], Leah Ye 300651931, Harry Philpott 300667756"
+author: "[GUYS ADD YOUR NAMES AND STUDENT ID HERE], Leah Ye 300651931, Harry Philpott 300667756, Elizabeth Myers 300641471"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -14,6 +14,7 @@ library(ggplot2)
 library(tidyr)
 library(corrplot)
 library(kableExtra)
+library(wesanderson)
 ```
 
 # **Introduction & Background** - Liz
@@ -154,7 +155,7 @@ ggsave(
 
 ```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Select numeric features for scaling 
-X <- data[, 3:14]                    #all numerical catergories
+X <- data[, 3:14]                    #all numerical categories
 X <- as.data.frame(scale(X))         # z-scores per variable
 X$.row <- 1:nrow(X)
 
@@ -166,13 +167,30 @@ box_long <- pivot_longer(           #tidyr
   values_to = "value"
 )
 
+colors <- c(
+  wes_palette("Darjeeling1"),     
+  wes_palette("FantasticFox1"),
+  wes_palette("Darjeeling2")    
+)
+
+colors <- colors[1:12]
+
 # boxplots on a common axis (z-scored)
-ggplot(box_long, aes(x = variable, y = value)) +
+
+ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
   coord_flip() +
+  scale_fill_manual(values = colors) + 
   labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Serbian spa water: Boxplots of all variables (z-scored)") +
-  theme(panel.grid.minor = element_blank())
+       title = "Serbian Spa Waters: Boxplots of All Variables (Z-scored)") +
+  theme_minimal(base_family = "Times New Roman") + 
+  theme(
+    panel.grid.major = element_line(color = "grey80", size = 0.3),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text = element_text(size = 12),
+    legend.position = "none"
+  )
 ```
 
 Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots show that some features (e.g. Na⁺, Cl⁻, HCO₃⁻) have greater variability and distinct outliers, while others remain tightly clustered around the mean. This highlights which chemical measures are most heterogeneous across the spa waters.
@@ -192,14 +210,15 @@ S_res  <- cov(res)
 d2_res <- mahalanobis(res, center = mu_res, cov = S_res)
 
 # Degrees of freedom = number of variables
-p <- ncol(res)
+df <- ncol(res)
 
 # QQ-plot
-qqplot(qchisq(ppoints(nrow(res)), df = p), d2_res,
+par(family = "serif")
+qqplot(qchisq(ppoints(nrow(res)), df = df), d2_res,
        main = "QQ-plot of MANOVA residuals",
        xlab = expression(paste(chi^2, " quantiles")),
        ylab = expression(paste("Ordered residual ", d[M]^2)))
-abline(0,1,col="steelblue4")
+abline(0,1,col="#046C9A")
 ```
 
 The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. Strictly speaking, this means the assumption of multivariate normality is not fully satisfied. Nevertheless, since most observations adhere reasonably closely to the expected distribution, it is common in practice to proceed under the approximate normality assumption while acknowledging these limitations and interpreting MANOVA results with some caution.
@@ -235,7 +254,7 @@ data$log.SiO <- log(data$SiO)
 
 1.  Check univariate normality for each variable
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 X.log <- data[, 16:27]                    # all log transformed numerical variables
 X.log <- as.data.frame(scale(X.log))         # z-scores per variable
 X.log$.row <- 1:nrow(X.log)
@@ -248,12 +267,20 @@ box_long <- pivot_longer(
 )
 
 # not z-scored
-ggplot(box_long, aes(x = variable, y = value)) +
+ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
   coord_flip() +
+  scale_fill_manual(values = colors) + 
   labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Serbian spa water: Boxplots of all log transformed variables (z-scored)") +
-  theme(panel.grid.minor = element_blank())
+       title = "Serbian Spa Waters: Boxplots of All Log Transformed Variables (Z-scored)") +
+  theme_minimal(base_family = "Times New Roman") + 
+  theme(
+    panel.grid.major = element_line(color = "grey80", size = 0.3),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text = element_text(size = 12),
+    legend.position = "none"
+  )
 ```
 
 -   Boxplots look much better than before\
@@ -366,6 +393,7 @@ We can see from the LDA plot distinct shapes and orientations in ellipses repres
 ## Correlation matrix - Harry
 
 ```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+par(family = "serif")
 cor_mat <- cor(X, use = "pairwise.complete.obs", method = "pearson")
 corrplot(cor_mat,
          method = "color",        
@@ -376,8 +404,7 @@ corrplot(cor_mat,
          tl.col = "black",        
          tl.srt = 45,             
          diag = FALSE, 
-         col = colorRampPalette(c("firebrick3","white","steelblue4"))(200)
-        
+         col = colorRampPalette(c("#046C9A","white","#FD6467"))(200)
 )
 ```
 
