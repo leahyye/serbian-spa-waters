@@ -1,63 +1,95 @@
 ---
 title: "Serbian Spa Waters"
-format: revealjs:
-  transition: slide
-  background-transition: fade
-  slideNumber: "c/t" # show slide number
-  progress: true
-  self-contained: true
-  theme: simple
+format:
+  revealjs:
+    theme: serif
+    transition: slide
+    background-transition: fade
+    slideNumber: "c/t" # show slide number
+    progress: true
+    self-contained: true
 editor: visual
-bibliography:
-  # i think this is where u add references
 ---
 
-## Group 6
+## Group 6 
 
-- Elizabeth
-- Claude
-- Leah  
-- Harry
+-   Elizabeth
+-   Claude
+-   Leah
+-   Harry
+
+---
+
+## Introduction
+
+- Analysis of hydrochemical and radiological data of mineral and thermal waters in Serbia.
+- Original authors used PCA and HCA to classify the waters with respect to their geotectonic units. 
+- Factor analysis was used to try to improve upon the original results. 
+
+---
 
 ## About the dataset
 
-Spa details here
+- 30 observations
+- 1 categorical variable
+  - Samples collected from four geological structures:
+    - Hydrogeological basins
+    - Karstic terrains
+    - Volcanogenic massifs
+    - Metamorphic regions 
+  
+---
 
-## Plot 1
+## 12 numerical variables 
 
+| Variable   | Description | Units |
+|------------|-------------|-------|
+|T           |Temperature  | $^\circ$C|
+|pH          |pH level (Acidity/Alkalinity)| |
+|EC          | Electrical conductivity |$\mu$S/cm|
+|TS          | Total disolved solids |g/L|
+|Ca$^{2+}$   | Calcium |mg/L|
+|Mg$^{2+}$   | Magnesium |mg/L|
+
+---
+
+## 12 numerical variables
+
+| Variable   | Description | Units |
+|------------|-------------|-------|
+|Na$^{+}$    | Sodium |mg/L|
+|K$^{+}$     | Potassium |mg/L|
+|Cl$^{-}$    | Chlorine |mg/L|
+|SO$^{2-}_4$ | Sulfate |mg/L|
+|HCO$^{-}_3$ | Bicarbonate |mg/L|
+|SiO$_2$     | Silica, dissolved silicon dioxide |mg/L|
+
+---
+
+## Observations per geological structure 
+
+| Geological Structure       | Number of Observations |
+|----------------------------|----------------------|
+| Hydrogeological Basins     | 5                    |
+| Karstic Terrains           | 5                    |
+| Volcanogenic Massifs       | 14                   |
+| Metamorphic Regions        | 6                    |
+
+- Unbalanced data set
+
+---
 
 ## Pairs plot
 
-## Insert cool plot here
-```{r}
-library(ggplot2)
+---
 
-# made-up data
-df <- data.frame(
-  Category = c("A", "B", "C", "D"),
-  Value = c(42, 67, 89, 55)   # you can change these numbers
-)
+Insert cool plot here
 
-# cool plot
-ggplot(df, aes(x = Category, y = Value, fill = Category)) +
-  geom_col(color = "steelblue") +
-  geom_text(aes(label = Value), vjust = -0.5, size = 5) +
-  scale_fill_viridis_d(option = "plasma") +
-  labs(
-    title = "Cool Test Plot with Made-up Data",
-    x = "Category",
-    y = "Value"
-  ) +
-  theme_minimal(base_size = 14)
-```
+
+
 wow that plot is so cool and interpreting it would be fun
 
+---
 
-
-## Bye
-
-that's it 
-```{r}
-520
-```
+Bye
 
