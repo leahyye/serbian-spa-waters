@@ -1,12 +1,17 @@
 ---
 title: "Serbian Spa Waters Report"
-author: "Leah Ye 300651931, Harry Philpott 300667756, Claude Butler 300651409,
-Elizabeth Myers 300641471"
+author: "Leah Ye (300651931), Harry Philpott (300667756),
+
+
+Claude Butler (300651409), Elizabeth Myers (300641471)"
 output: bookdown::pdf_document2
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE
+)
 library(dplyr)
 library(knitr)
 library(GGally)
@@ -14,6 +19,8 @@ library(ggplot2)
 library(tidyr)
 library(corrplot)
 library(kableExtra)
+library(plotly)
+library(MASS)
 ```
 
 # **Introduction**
@@ -22,13 +29,13 @@ This study analyzed hydrochemical data for mineral and thermal waters in
 Serbian territory. The authors used principal component analysis (PCA) and 
 hierarchical cluster analysis (HCA) to characterize the chemical composition 
 and natural radioactivity of these water samples, understand the relationships 
-between the variables measured, and classify the waters with respect to their 
+between the variables measured, and classify the waters with respect to their                  
 geotectonic units. PCA revealed four latent factors that accounted for 74.2% of 
 the variability among the observations. Two of these four PCs are based on 
 measures of mineralisation of the components of the host rock, and the other 
 two are based on variables that are indicative of natural radioactivity. The 
-results of HCA achieved a total correct classification of 83.3% for predefined 
-geotectonic units, and the dendrogram produced classified the samples into four 
+results of PCA achieved a total correct classification of 83.3% for predefined 
+geotectonic units, and the dendrogram of HCA classified the samples into four 
 major groups and eleven subgroups.
 
 # **Methodology**
@@ -37,11 +44,11 @@ The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 
 -   idNum: Integer - Index of each observation;\
 -   waterSource: Character - Spa/Spring the observation belongs to;\
--   tempCels: Numerical - Outflowing temperature (°C);
+-   tempCels: Numerical - Outflowing temperature (°C);\
 -   pH: Numerical - pH level(Acidity/Alkalinity);\
 -   elecCond: Integer - Electrical Conductivity of water measured immediately 
     after collection on the spot, total ion concentration ($\mu$S/cm);\
--   totSolid: Numerical - Total dissolved solids (gL)
+-   totSolid: Numerical - Total dissolved solids (g/L)\
 -   Ca2: Numerical - Calcium (mg/L);\
 -   Mg2: Numerical - Magnesium (mg/L);\
 -   Na: Numerical - Sodium (mg/L);\
@@ -52,7 +59,7 @@ The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 -   Si0: Numerical - Silica, dissolved silicon dioxide (mg/L);\
 -   geoStruct: Integer - The geological structure the water was collected from 
     (1 = Hydrological Basin, 2 = Karstic terrains, 3 = Volcanogen Massifs, 
-     4 = Metamorphic Regions)
+     4 = Metamorphic Regions).
 
 Ions $\mathrm{(HCO_3^-, Ca^{2+}, Mg^{2+}, Na^+, K^+, Cl^-, SO_4^{2-}, SiO_2)}$ 
 were analysed in the laboratories of the Institute of Public Health of Serbia. 
@@ -69,7 +76,7 @@ There are no duplicates, missing data, zeros, negatives, NAs or NULL values in
 the dataset.
 
 Exploratory data analysis will assess basic summary statistics of the data.
-We will utilise graphical analysis of a pairs plots, box plots, and QQ plot to 
+We will utilise graphical analysis of box plots and a QQ plot to 
 check basic assumptions of  required for further analysis, such as both
 univariate and multivariate normality. A correlation plot and Principal 
 Component Analysis (PCA) will be performed to further investigate the 
@@ -79,8 +86,8 @@ Mahalanobis distance, and in terms of the principal components.
 
 Our initial exploratory data analysis revealed that the dataset was 
 characterised by high variability and right-skewedness, leading us to perform
-a log transformation on the data and use these transformed variables for our
-further analysis.
+a log transformation on the data and use these transformed variables for our 
+analysis.
 
 We will assess the validity of the paper's geoStruct groups based on the data,
 using the methods of MANOVA and Naive Bayes Classifier, as our EDA revealed
@@ -90,7 +97,9 @@ We will then use Factor Analysis to attempt to improve on the paper's model
 parsimony; factor analysis is better for model selection since it doesn't 
 include noise like PCA, and maintains parsimony. 
 
-# **Results**
+# **Results and Discussion**
+
+## EDA
 
 ```{r echo=FALSE}
 data <- read.csv("serbianspawater.csv")
@@ -117,10 +126,11 @@ summary_formatted[, 2:6] <- lapply(summary[, 2:6], function(x) sprintf("%.2f", x
 
 # Display table
 kable(summary_formatted, caption = "Summary Statistics for Numeric Columns", align = c("l", "r", "r", "r", "r", "r")) %>%
-  kable_styling(full_width = FALSE, position = "center") %>%
+  kable_styling(latex_options = "H", position = "center") %>%
   row_spec(0, extra_css = "font-family: serif;") %>%  
   column_spec(1:ncol(summary), extra_css = "font-family: serif;")  
 ```
+
 This dataset is characterized by high variability. This is likely due to the 
 different water sources. pH is more consistent, ranging from neutral (6.5) to 
 slightly basic (9.0), which are fairly typical values for water in nature. The 
@@ -173,7 +183,7 @@ ggplot(box_long, aes(x = variable, y = value)) +
   geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
   coord_flip() +
   labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Fig. 1: Serbian Spa Water: boxplots of all variables (z-scored)") +
+       title = "Fig. 1: Boxplots of all variables (z-scored) for Serbian spa waters") +
   theme(panel.grid.minor = element_blank())
 ```
 Variables were standardised to z-scores to allow direct comparison despite 
@@ -183,3 +193,454 @@ variability and distinct outliers, while others remain tightly clustered around
 the mean. This highlights which chemical measures are most heterogeneous across 
 the spa waters. However, all variables in the boxplot have a non-symmetrical 
 shape and contain outliers, indicating that a log transformation is necessary.
+
+```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+# Fit MANOVA model using geoStruct as grouping
+fit <- manova(as.matrix(X) ~ data$geoStruct)
+# Extract residuals
+res <- residuals(fit)
+# Mahalanobis distances of residuals
+mu_res <- colMeans(res)
+S_res  <- cov(res)
+d2_res <- mahalanobis(res, center = mu_res, cov = S_res)
+
+# Degrees of freedom = number of variables
+p <- ncol(res)
+
+# QQ-plot
+qqplot(qchisq(ppoints(nrow(res)), df = p), d2_res,
+       main = "Fig. 2: QQ-plot of Serbian spa water MANOVA residuals",
+       xlab = expression(paste(chi^2, " quantiles")),
+       ylab = expression(paste("Ordered residual ", d[M]^2)))
+abline(0,1,col="steelblue4")
+```
+
+The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical 
+$\chi^2$ distribution provides a diagnostic for assessing multivariate 
+normality. If the residuals were perfectly normal, the points would lie close to 
+the 45° line. In this case, the points deviate fairly evenly across the range of 
+quantiles, rather than only at one end, indicating that the residuals are not an 
+exact match to the multivariate Gaussian model. The upper tail in particular 
+shows noticeable departures, with the largest residuals exceeding the expected 
+$\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the 
+presence of outliers. This means the assumption of multivariate normality is not 
+fully satisfied.
+
+```{r, echo=FALSE}
+# Log transforming numeric variables and adding them into dataset as new columns
+data$log.tempCels <- log(data$tempCels)
+data$log.pH <- log(data$pH)
+data$log.elec.Cond <- log(data$elecCond)
+data$log.totSolid <- log(data$totSolid)
+data$log.Ca2 <- log(data$Ca2)
+data$log.Mg2 <- log(data$Mg2)
+data$log.Na <- log(data$Na)
+data$log.K <- log(data$K)
+data$log.Cl <- log(data$Cl)
+data$log.SO2 <- log(data$SO2)
+data$log.HCO <- log(data$HCO)
+data$log.SiO <- log(data$SiO)
+```
+
+After performing a log transformation of the variables, we recheck the 
+univariate and multivariate normality of the data.
+
+```{r echo=FALSE, warning=FALSE, message = FALSE}
+X.log <- data[, 16:27]                    # all log transformed numerical variables
+X.log <- as.data.frame(scale(X.log))         # z-scores per variable
+X.log$.row <- 1:nrow(X.log)
+
+box_long <- pivot_longer(           
+  X.log,
+  cols = - .row,
+  names_to = "variable",
+  values_to = "value"
+)
+
+# not z-scored
+ggplot(box_long, aes(x = variable, y = value)) +
+  geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
+  coord_flip() +
+  labs(x = NULL, y = "Scaled value (z-score)",
+       title = "Fig.3: Boxplots of log transformed Serbian spa water variables (z-scored)") +
+  theme(panel.grid.minor = element_blank())
+```
+
+The boxplots are far more symmetric than with the untransformed data, showing
+more conformity with the normal distribution. However, we can clearly see the
+presence of outliers, particularly with the variable $\mathrm{Mg^{2+}}$, with
+four observations at least 2 standard deviations below the mean.
+
+```{r echo=FALSE}
+X_log_matrix <- as.matrix(X.log[,-which(names(X.log) == ".row")]) # Remove the .row column for analysis
+
+# Fit MANOVA model
+fit_log <- manova(X_log_matrix ~ data$geoStruct)
+res_log <- residuals(fit_log)
+
+# Reusing Prev code
+# Mahalanobis distances of residuals
+mu_res_log <- colMeans(res_log)
+S_res_log  <- cov(res_log)
+d2_res_log <- mahalanobis(res_log, center = mu_res_log, cov = S_res_log)
+
+# Degrees of freedom = number of variables
+p <- ncol(res_log)
+
+# QQ-plot
+qqplot(qchisq(ppoints(nrow(res_log)), df = p), d2_res_log,
+       main = "Fig. 4: QQ-plot of MANOVA (log transformed) residuals",
+       xlab = expression(paste(chi^2, " quantiles")),
+       ylab = expression(paste("Ordered residual ", d[M]^2)))
+abline(0,1,col="steelblue4")
+```
+
+The points follow the line much more closely, only slight deviations from the 
+line at low and high values. The log transformed data much more closely 
+follows a multivariate normal distribution.
+
+```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+cor_mat <- cor(X, use = "pairwise.complete.obs", method = "pearson")
+
+# Define layout: 2 rows, 1 column — small top row for title
+layout(matrix(c(1, 2), nrow = 2), heights = c(0.1, 0.9))
+
+# Top row: title only
+par(mar = c(0, 0, 1, 0))  # No margins except top
+plot.new()
+title("Fig. 5: Correlation Matrix of Serbian Spa Water Variables", cex.main = 1.2)
+
+corrplot(
+  cor_mat,
+  method = "color",        
+  type = "upper",          
+  order = "hclust",        
+  addCoef.col = "black",   
+  number.cex = 0.7,        
+  tl.col = "black",        
+  tl.srt = 45,             
+  diag = FALSE,
+  col = colorRampPalette(c("firebrick3", "white", "steelblue4"))(200)
+)
+
+``` 
+
+Electrical conductivity, total solids, sodium, potassium, and chloride form a 
+strongly correlated cluster, indicating they vary together across spa waters. 
+In contrast, pH shows moderate negative correlations with several ions (e.g., 
+C$\mathrm{Ca^{2+}}$, $\mathrm{Mg^{2+}}$, $\mathrm{HCO_3^-}$), suggesting 
+different geochemical influences. Overall, the matrix highlights both tightly 
+linked chemical groups and variables with weaker or opposing trends.
+
+
+## PCA
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot}
+
+pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
+
+par(mar = c(5, 4, 4, 2) + 0.1)
+
+# Plot PCA scree plot
+plot(pca_fit, type = "l", main = "Fig. 7: PCA elbow plot for Serbian spa data")
+
+```
+```{r PCA-summary-table, echo=FALSE, message=FALSE, warning=FALSE}
+# Perform PCA
+pca_fit <- prcomp(X_log_matrix, center = TRUE, scale. = TRUE)
+
+# Extract summary and convert to data frame
+pca_summary <- summary(pca_fit)$importance
+pca_df <- as.data.frame(round(pca_summary, 4))  # Round for readability
+pca_df <- t(pca_df)  # Transpose so PCs are rows
+
+# Create clean table
+kable(pca_df, caption =  "Summary of Principal Components", align = "c", format = "latex",
+      booktabs = TRUE,
+      longtable = FALSE) %>%
+  kable_styling(latex_options = c("H"), full_width = FALSE, position = "center") %>%
+kable_styling(full_width = FALSE, position = "center") %>%
+row_spec(0, extra_css = "font-family: serif;") %>%
+row_spec(1:nrow(pca_df), extra_css = "font-family: serif;") %>%
+column_spec(1:ncol(pca_df), extra_css = "font-family: serif;") 
+
+```
+
+Moving on to PCA, we can see (Table 2) that PC1 explains a lot of the variance 
+(around half, 48.41%). PC2 explains about a further fifth (17.94%). PC3 and PC4
+explain a further 10.83% and 7.79% respectively, and these 4 PCs cumulatively
+account for 84.97% of the overall variance. From PC5 and onwards, each PC 
+explains less than 7% of the extra variance. The elbow plot (Fig.6) displays this 
+flattening as the effect of each PC becomes smaller and smaller. It appears 
+that using 4 Principal Components would be sufficient in the model.
+
+```{r echo=FALSE}
+
+loadings <- pca_fit$rotation
+
+loadings_df <- as.data.frame(loadings)
+loadings_df$Variable <- rownames(loadings_df)
+
+loadings_df <- loadings_df[, c("Variable", paste0("PC", 1:4))]
+
+rownames(loadings_df) <- NULL
+
+knitr::kable(loadings_df, digits = 3, caption = "Serbian Spa Variable Influence on Principal Components", align = "c")
+
+```
+
+
+In PC1, $HCO_3^-$ (0.388), $Na^+$ (0.345), elecCond (0.378), $K^+$ (0.376), 
+and totSolid(0.367) have the highest influence. PC1 strongly correlates with 
+variables relating to major ions and total dissolved content. PC1 measures the 
+overall mineralisation and ionisation levels of the water. Samples with high PC1 
+scores have high mineralisation. 
+
+In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352),
+and $Na^+$ (-0.301), have the strongest influence. PC2 separates water with high 
+calcium and magnesium (hardness) from waters at higher temperatures. This could 
+mean that there is a difference between hard, cold waters and warmer waters.
+
+In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters 
+that have more sulfate are warmer.
+
+In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest 
+influence. Waters with higher chlorine levels have less silicone and are warmer.
+
+## Surprising observations
+
+```{r echo=FALSE}
+# Standardise numeric variables
+X <- scale(data[, 3:14])
+
+# Find any rows with at least one variable > 3 sd away
+outliers <- which(apply(abs(X), 1, max) > 3)
+
+# Show these "surprising" sites
+surprising_sites <- data[outliers, c("waterSource", "tempCels", "elecCond", "totSolid",
+                 "Na", "Cl", "HCO")]
+
+knitr::kable(surprising_sites,
+             format = "latex",
+             caption = "Table: Water sources with at least one variable > 3 standard deviations from the mean",
+             align = "c",
+             digits = 2) %>%
+  kable_styling(latex_options = "H", position = "center")
+            
+```
+
+From the standardised $n=30$ observations, five springs are flagged as clear 
+outliers: Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites 
+has at least one measurement more than three standard deviations from the mean. 
+Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total 
+dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high 
+concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate 
+($3360$ mg/L). Vranjska stands out for its near-boiling temperature 
+($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels 
+relative to the rest of the dataset. These five cases are the most “surprising” 
+when the dataset is examined variable by variable.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+# Multivariate check: Mahalanobis distances
+mu <- colMeans(X)
+S  <- cov(X)
+d2 <- mahalanobis(X, center = mu, cov = S)
+
+# Flag all sites with distance above the chi-square 99.9% cutoff
+cut <- qchisq(0.999, df = ncol(X))
+which(d2 > cut)
+data[d2 > cut, c("waterSource", "tempCels", "elecCond", "totSolid",
+                 "Na", "Cl", "HCO")]
+
+# PCA on the log-transformed variables (already created earlier)
+pca_result <- prcomp(X_log_matrix, scale. = TRUE)
+
+# Get the scores for the first two PCs
+scores <- as.data.frame(pca_result$x)
+scores$waterSource <- data$waterSource
+scores$geoStruct <- as.factor(data$geoStruct)
+
+pca_plot_data <- data.frame(
+  PC1 = pca_result$x[, 1],
+  PC2 = pca_result$x[, 2],
+  Geological_Group = as.factor(data$geoStruct),
+  Water_Source = data$waterSource 
+)
+
+# PC2 vs PC1
+ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
+  geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.5) +
+  stat_ellipse(level = 0.95, alpha = 0.7) +  
+  labs(
+    title = "Fig. 8: PC2 vs PC1",
+    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
+    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"),
+    color = "Geological\nStructure"
+  ) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "right")
+```
+The PCA score plot gives a multivariate view, showing which sites are extreme 
+in terms of their overall chemical profiles rather than a single ion. Along the 
+first principal component (PC1, representing overall mineralisation), Ribarska 
+and Prolom score strongly negative, indicating highly mineralised waters, while 
+Kanjiža lies on the opposite end with a very dilute profile. Along the second 
+principal component (PC2, contrasting hardness with temperature/pH), Vuča sits 
+at the upper extreme with unusually high hardness, whereas Prolom and Ribarska 
+again fall at the lower end, consistent with warmer, more alkaline waters. Thus, 
+while the z-score analysis highlights individual extremes, the PCA identifies 
+different sites as “surprising” because of their distinctive multivariate 
+signatures.
+
+## Factor Analysis
+
+Factor analysis is a model estimation which deals with the assumptions of 
+underlying causal structure, whereas PCA was a data transformation.
+
+
+```{r echo=FALSE, message=FALSE}
+library(psych)
+X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
+
+pvalues <- rep(0, 5) 
+for(f in 1:5) {
+  res <- try(factanal(X.log, factors = f), silent = TRUE) # get the p-values for each factor
+  if(!inherits(res, "try-error")) {
+    pvalues[f] <- res$PVAL
+  }
+}
+
+ggplot(data.frame(Factors = 1:5, pvalues = pvalues), 
+       aes(x = Factors, y = pvalues)) +
+  geom_point(size = 3) +
+  geom_line() +
+  xlab("Number of Factors") +
+  ylab("p-value") +
+  labs(title = "Fig. 9: Factor Adequacy Test")
+```
+The p-values in this table check the following:
+$H_0:$ k factors are sufficient\
+$H_1:$ More than k factors are needed
+
+Therefore, 5 factors is sufficient as p-value is \> 0.05. 4 or less factors is 
+not sufficient (p-values \< 0.03).
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+# Run factor analysis
+faresult <- factanal(X.log, factors = 5)
+
+# Extract SS loadings (sum of squared loadings per factor)
+ss_loadings <- colSums(as.matrix(faresult$loadings)^2)
+
+# Calculate proportions and cumulative proportions
+proportion_var <- ss_loadings / ncol(X.log)
+cumulative_var <- cumsum(proportion_var)
+
+# Combine into a matrix for display
+stats_matrix <- rbind(
+  "SS loadings"    = ss_loadings,
+  "Proportion Var" = proportion_var,
+  "Cumulative Var" = cumulative_var
+)
+
+# Round for readability
+stats_matrix <- round(stats_matrix, 3)
+
+# Assign column names like Factor1, Factor2, etc.
+colnames(stats_matrix) <- paste0("Factor", seq_len(ncol(stats_matrix)))
+
+knitr::kable(stats_matrix, "latex", booktabs = TRUE, caption = "Summary Statistics from Factor Analysis (5 Factors)") %>%
+  kable_styling(latex_options = "hold_position")
+
+```
+
+Factor 5's loading is small (0.379), and only contributes 3.1% of the overall
+variance. So we will go back to four factors, and visualize the result.
+
+```{r echo=FALSE}
+fa.diagram(faresult$loading[,1:4], digits=4, main = "")
+title(main = "Fig. 10: Factor analysis" )
+```
+
+The red arrows indicate negative variables.
+
+-   F1: Total Solid (+), Electrical Conductivity (+), Na (+), HCO (+), K (+), 
+SiO (+).\
+-   F2: Mg2 (+), Ca2 (+), pH (-), tempCels (-).\
+-   F3: Cl (+).\
+-   F4: SO2 (+).
+
+Factor analysis selected 4 factors with 79% variance explained, whereas PCA 
+preferred 4 PCs with 85% variance explained. The factors show that there are 4 
+water types:
+
+-   F1: Highly mineralised waters (high soliditity and electrical conductivity)\
+-   F2: Magenesium, Calcium (hardness ions), acidic and cool waters\
+-   F3: Chloric waters.\
+-   F4: Sulfate waters.
+
+Factor analysis is better for model selection since it doesn't include noise 
+like PCA (that's why PCA variance for 4 PCs was greater than FA 4 factors 
+cumulative variance), and maintains parsimony. PCA had to consider all 12 
+Principal Components, whereas FA only had to look at 5 or less factors for 
+determining the underlying structure of spa water composition.
+
+## geoStruct Groups
+
+```{r}
+# Check p value
+summary(fit_log, test = "Hotelling-Lawley")
+```
+To assess whether the predefined geostructural groups are verified by the water 
+chemistry data, we began with a formal test of multivariate mean differences. A 
+MANOVA on the log-transformed variables produced a p-value of 0.057, which 
+provides only weak evidence that the group mean vectors differ. This suggests 
+that while some differences exist, they are not pronounced enough to be 
+considered statistically significant at conventional levels.
+
+```{r}
+lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
+lda_fit <- lda(geoStruct ~ ., data = lda_data)
+lda_scores <- predict(lda_fit)$x
+
+plot_data <- data.frame(lda_scores, Group = as.factor(lda_data$geoStruct))
+
+ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
+  geom_point(size = 3) +
+  stat_ellipse(level = 0.95) +
+  labs(title = "Fig. 6: Visual Check of Group Covariance",
+       x = "Linear Discriminant 1",
+       y = "Linear Discriminant 2") +
+  theme_minimal()
+```
+
+We can see from the LDA plot distinct shapes and orientations in ellipses 
+representing the covariance of the groups. Given the clear differences between
+these groups, the covariance matrices of the groups cannot be equal and LDA is 
+not appropriate for this data. The assumption of equal covariance is clearly 
+failed when looking at the distinction in the shape and orientation between each 
+group.
+
+```{r}
+library(e1071)
+library(caret)
+y  <- factor(data$geoStruct)
+Xl <- scale(as.data.frame(X_log_matrix))
+# Leave-One-Out Cross-Validation
+n <- nrow(Xl); pred <- factor(rep(NA,n), levels=levels(y))
+for(i in 1:n){
+  fit_i <- naiveBayes(x=Xl[-i,], y=y[-i])
+  pred[i] <- predict(fit_i, newdata=Xl[i,,drop=FALSE])
+}
+confusionMatrix(table(True=y, Pred=pred))
+
+```
+
+
+
+
+
+
