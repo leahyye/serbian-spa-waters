@@ -68,8 +68,24 @@ per group.
 There are no duplicates, missing data, zeros, negatives, NAs or NULL values in 
 the dataset.
 
+Exploratory data analysis will assess basic summary statistics of the data.
+We will utilise graphical analysis of a pairs plots, box plots, and QQ plot to 
+check basic assumptions of  required for further analysis, such as both
+univariate and multivariate normality. A correlation plot and Principal 
+Component Analysis (PCA) will be performed to further investigate the 
+relationships between variables. We will also identify outliers and 
+surprising observations within the data, using standard deviation as well as
+Mahalanobis distance, and in terms of the principal components.
+
 Our initial exploratory data analysis revealed that the dataset was 
-charactarised by high variability and right-skewedness, leading us to perform
+characterised by high variability and right-skewedness, leading us to perform
 a log transformation on the data and use these transformed variables for our
 further analysis.
+
+We will assess the validity of the paper's geoStruct groups based on the data,
+using the methods of MANOVA and Naive Bayes Classifier, as our EDA revealed
+that the data violates the assumptions for Linear Discriminant Analysis.
+
+We will then use Factor Analysis to attempt to improve on the model quality of
+the paper.
 
