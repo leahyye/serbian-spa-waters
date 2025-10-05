@@ -315,14 +315,17 @@ S_res_log  <- cov(res_log)
 d2_res_log <- mahalanobis(res_log, center = mu_res_log, cov = S_res_log)
 
 # Degrees of freedom = number of variables
-p <- ncol(res_log)
+df_log <- ncol(res_log)
 
 # QQ-plot
-qqplot(qchisq(ppoints(nrow(res_log)), df = p), d2_res_log,
+par(family = "serif")
+
+qqplot(qchisq(ppoints(nrow(res_log)), df = df_log), d2_res_log,
        main = "QQ-plot of MANOVA (log transformed) residuals",
        xlab = expression(paste(chi^2, " quantiles")),
        ylab = expression(paste("Ordered residual ", d[M]^2)))
-abline(0,1,col="steelblue4")
+abline(0,1,col="#046C9A", lwd = 2)
+
 ```
 
 -   The points follow the line much more closely, only slight deviations from the line at low and high values.
@@ -415,9 +418,32 @@ Electrical conductivity, total solids, sodium, potassium, and chloride form a st
 ## PCA - Leah
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot, fig.cap="Figure 4: PCA plot", fig.asp=0.8}
-library(plotly)
+
 pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
-plot(pca_fit, type="l")
+
+# variance explained
+var_explained <- pca_fit$sdev^2 / sum(pca_fit$sdev^2)
+
+# data frame for ggplot
+df <- data.frame(
+  PC = seq_along(var_explained),
+  Variance = var_explained
+)
+
+ggplot(df, aes(x = PC, y = Variance)) +
+  geom_line(color = "#046C9A", linewidth = 1) +
+  geom_point(size = 3, color = "#046C9A") +
+  labs(
+    title = "Scree Plot",
+    x = "Principal Component",
+    y = "Proportion of Variance Explained"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12)
+  )
 ```
 
 -   PC1 explains most of the variance (around 4)\
@@ -426,8 +452,27 @@ plot(pca_fit, type="l")
 -   From PC4, the line starts to flatten\
 -   Each additional component after PC4 only adds a tiny bit of variance.
 
-```{r echo=FALSE, PC-Summary-tab}
-summary(pca_fit)
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+cum_var <- cumsum(var_explained)
+
+# select only first 8 PCs
+var_explained8 <- var_explained[1:8]
+cum_var8 <- cum_var[1:8]
+
+# wide table
+pca_wide8 <- rbind(
+  `Proportion of Variance` = var_explained8,
+  `Cumulative Proportion` = cum_var8
+)
+colnames(pca_wide8) <- paste0("PC", 1:8)
+
+kable(pca_wide8, format = "html", booktabs = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    font_size = 16
+  ) %>%
+  kable_classic(full_width = FALSE, html_font = "Times New Roman")
 ```
 
 -   PC1 has a standard deviation of 2.41, and explains 48.4% of the variance
@@ -438,8 +483,28 @@ summary(pca_fit)
 
 Using 4 Principal Components would be sufficient in the model.
 
-```{r}
-pca_fit
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE}
+pc_loadings <- pca_fit$rotation[,1:6]
+pc_loadings <- round(pc_loadings, 3)
+
+pc_loadings_df <- as.data.frame(pc_loadings)
+
+# Bold values >0.3 or <-0.3
+pc_loadings_bold <- pc_loadings_df %>%
+  mutate(across(everything(), ~cell_spec(
+    ., 
+    bold = abs(.) > 0.3
+  )))
+
+# Pretty table
+kable(pc_loadings_bold, escape = FALSE, format = "html", booktabs = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    font_size = 16,
+    html_font = "Times New Roman"
+  ) %>%
+  row_spec(0, bold = TRUE, font_size = 18)
 ```
 
 -   In PC1, $HCO_3^-(0.388), Na^+(0.345), elecCond(0.378), K^+(0.376), totSolid(0.367)$ have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with high PC1 scores have high mineralisation.
@@ -487,20 +552,32 @@ pca_plot_data <- data.frame(
 )
 
 # PC2 vs PC1
+
+palette <- c( "#046C9A", "#30D5C8",
+                 "#FD6467", "#7D3C98")
+
 ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
-  geom_point(size = 4, alpha = 0.8) +
-  geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
-  geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.5) +
-  stat_ellipse(level = 0.95, alpha = 0.7) +  
+  geom_point(size = 4, alpha = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 1) +
+  geom_vline(xintercept = 0, linetype = "dashed", alpha = 1) +
+  stat_ellipse(level = 0.95, alpha = 1, linewidth = 1) +  
   labs(
     title = "PCA: PC2 vs PC1",
     x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
     y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"),
     color = "Geological\nStructure"
   ) +
-  theme_minimal() +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "right")
+  scale_color_manual(values = palette) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(face = "bold", size = 22),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12),
+    panel.grid.major = element_line(color = "grey85"),
+    panel.grid.minor = element_blank()
+  )
 ```
 
 From the standardised $n=30$ observations, five springs are flagged as clear outliers: Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites has at least one measurement more than three standard deviations from the mean. Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate ($3360$ mg/L). Vranjska stands out for its near-boiling temperature ($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels relative to the rest of the dataset. These five cases are the most “surprising” when the dataset is examined variable by variable.
@@ -537,11 +614,19 @@ for(f in 1:5) {
 
 ggplot(data.frame(Factors = 1:5, pvalues = pvalues), 
        aes(x = Factors, y = pvalues)) +
-  geom_point(size = 3) +
-  geom_line() +
-  xlab("Number of Factors") +
-  ylab("p-value") +
-  labs(title = "Factor Adequacy Test")
+  geom_line(color = "#046C9A", size = 1) +
+  geom_point(color = "#046C9A", size = 3) +
+  labs(
+    title = "Factor Adequacy Test",
+    x = "Number of Factors",
+    y = "p-value"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14)
+  )
 ```
 
 $H_0:$ k factors are sufficient\
@@ -588,7 +673,79 @@ for(i in 1:n){
   fit_i <- naiveBayes(x=Xl[-i,], y=y[-i])
   pred[i] <- predict(fit_i, newdata=Xl[i,,drop=FALSE])
 }
-confusionMatrix(table(True=y, Pred=pred))
+
+# ensure factors have same levels
+pred <- factor(pred, levels = levels(y))
+y <- factor(y, levels = levels(y))
+
+# create confusion matrix table
+cm_table <- table(Predicted = pred, True = y) %>%
+  as.data.frame() %>%
+  rename(Freq = Freq)
+
+# square matrix: make sure levels are respected for plotting
+cm_table$Predicted <- factor(cm_table$Predicted, levels = levels(y))
+cm_table$True <- factor(cm_table$True, levels = levels(y))
+
+ggplot(cm_table, aes(x = True, y = Predicted, fill = Freq)) +
+  geom_tile(color = NA, size = 0.8) +
+  geom_text(aes(label = Freq), size = 6, family = "Times New Roman", fontface = "bold") +
+  scale_fill_gradient(low = "white", high = "#046C9A") +
+  labs(
+    x = "True Class",
+    y = "Predicted Class",
+    title = "LOOCV Confusion Matrix"
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    panel.grid = element_blank()
+  ) +
+  coord_fixed()  
+```
+
+```{r, warning=false}
+pred <- factor(pred, levels = levels(y))
+y    <- factor(y, levels = levels(y))
+
+# Confusion matrix
+cm <- table(True = y, Predicted = pred)
+
+# Class-level metrics
+classes <- levels(y)
+metrics <- data.frame(
+  Class = classes,
+  Precision = numeric(length(classes)),
+  Recall = numeric(length(classes)),
+  F1 = numeric(length(classes)),
+  Support = numeric(length(classes))
+)
+
+for (i in seq_along(classes)) {
+  cls <- classes[i]
+  tp <- cm[cls, cls]
+  fp <- sum(cm[, cls]) - tp
+  fn <- sum(cm[cls, ]) - tp
+  precision <- if ((tp + fp) == 0) NA else tp / (tp + fp)
+  recall    <- if ((tp + fn) == 0) NA else tp / (tp + fn)
+  f1        <- if (is.na(precision) | is.na(recall) | (precision + recall) == 0) NA else 2 * precision * recall / (precision + recall)
+  support   <- sum(cm[cls, ])
+  
+  metrics[i, 2:5] <- round(c(precision, recall, f1, support), 3)
+}
+
+# Pretty table
+metrics %>%
+  kable("html", booktabs = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    font_size = 16,
+    html_font = "Times New Roman"
+  ) %>%
+  row_spec(0, bold = TRUE, font_size = 18)
 
 ```
 

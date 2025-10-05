@@ -18,6 +18,7 @@ editor: visual
 -   Leah
 -   Harry
 
+
 # Introduction
 
 - Analysis of hydrochemical and radiological data of mineral and thermal waters in Serbia.
@@ -33,7 +34,7 @@ editor: visual
     - Karstic terrains
     - Volcanogenic massifs
     - Metamorphic regions 
-  
+    
 # 12 numerical variables 
 
 | Variable   | Description | Units |
@@ -242,11 +243,9 @@ abline(0,1,col="#046C9A", lwd = 2)
 
 ::::
 
----
-
 ## Re-checking for normality
 
-```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='95%', out.height='90%'}
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 
 # Log transforming numeric variables and adding them into dataset as new columns
 data$log.tempCels <- log(data$tempCels)
@@ -290,6 +289,248 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   )
 ```
 
+---
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+
+X_log_matrix <- as.matrix(X.log[, !names(X.log) %in% ".row"])
+
+# Fit MANOVA model
+fit_log <- manova(X_log_matrix ~ data$geoStruct)
+res_log <- residuals(fit_log)
+
+# Reusing Prev code
+# Mahalanobis distances of residuals
+mu_res_log <- colMeans(res_log)
+S_res_log  <- cov(res_log)
+d2_res_log <- mahalanobis(res_log, center = mu_res_log, cov = S_res_log)
+
+# Degrees of freedom = number of variables
+df_log <- ncol(res_log)
+
+# QQ-plot
+par(family = "serif",
+    cex.main = 2.5,
+    cex.lab = 2,
+    cex.axis = 1.8,
+    mar = c(5, 6, 4, 2))
+
+qqplot(qchisq(ppoints(nrow(res_log)), df = df_log), d2_res_log,
+       main = "QQ-plot of MANOVA (log transformed) residuals",
+       xlab = expression(paste(chi^2, " quantiles")),
+       ylab = expression(paste("Ordered residual ", d[M]^2)))
+abline(0,1,col="#046C9A", lwd = 2)
+```
+
+# PCA
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
+
+# variance explained
+var_explained <- pca_fit$sdev^2 / sum(pca_fit$sdev^2)
+
+# data frame for ggplot
+df <- data.frame(
+  PC = seq_along(var_explained),
+  Variance = var_explained
+)
+
+ggplot(df, aes(x = PC, y = Variance)) +
+  geom_line(color = "#046C9A", linewidth = 1) +
+  geom_point(size = 3, color = "#046C9A") +
+  labs(
+    title = "Scree Plot",
+    x = "Principal Component",
+    y = "Proportion of Variance Explained"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14)
+  )
+```
+
+# PCA 
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+library(knitr)
+library(kableExtra)
+
+cum_var <- cumsum(var_explained)
+
+# select only first 8 PCs
+var_explained8 <- var_explained[1:8]
+cum_var8 <- cum_var[1:8]
+
+# wide table
+pca_wide8 <- rbind(
+  `Proportion of Variance` = var_explained8,
+  `Cumulative Proportion` = cum_var8
+)
+colnames(pca_wide8) <- paste0("PC", 1:8)
+
+kable(pca_wide8, format = "html", booktabs = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    font_size = 22
+  ) %>%
+  kable_classic(full_width = FALSE, html_font = "Times New Roman")
+```
+
+# PCA
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+pc_loadings <- pca_fit$rotation[,1:8]
+pc_loadings <- round(pc_loadings, 3)
+
+pc_loadings_df <- as.data.frame(pc_loadings)
+
+pc_loadings_bold <- pc_loadings_df %>%
+  mutate(across(everything(), ~cell_spec(
+    ., 
+    bold = abs(.) > 0.3
+  )))
+
+kable(pc_loadings_bold, escape = FALSE, format = "html", booktabs = TRUE) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    font_size = 26,
+    html_font = "Times New Roman"
+  ) %>%
+  row_spec(0, bold = TRUE, font_size = 28)
+```
+
+# PC2 vs. PC1
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+# PCA on the log-transformed variables (already created earlier)
+pca_result <- prcomp(X_log_matrix, scale. = TRUE)
+
+# Get the scores for the first two PCs
+scores <- as.data.frame(pca_result$x)
+scores$waterSource <- data$waterSource
+scores$geoStruct <- as.factor(data$geoStruct)
+
+pca_plot_data <- data.frame(
+  PC1 = pca_result$x[, 1],
+  PC2 = pca_result$x[, 2],
+  Geological_Group = as.factor(data$geoStruct),
+  Water_Source = data$waterSource 
+)
+
+# PC2 vs PC1
+palette <- c( "#046C9A", "#30D5C8",
+                 "#FD6467", "#7D3C98")
+
+ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
+  geom_point(size = 4, alpha = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed", alpha = 1) +
+  geom_vline(xintercept = 0, linetype = "dashed", alpha = 1) +
+  stat_ellipse(level = 0.95, alpha = 1, linewidth = 1) +  
+  labs(
+    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
+    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"),
+    color = "Geological\nStructure"
+  ) +
+  scale_color_manual(values = palette) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    axis.title = element_text(size = 18),
+    axis.text = element_text(size = 16),
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14),
+    panel.grid.major = element_line(color = "grey85"),
+    panel.grid.minor = element_blank()
+  )
+```
+
+---
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+library(psych)
+X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
+
+pvalues <- rep(0, 5) 
+for(f in 1:5) {
+  res <- try(factanal(X.log, factors = f), silent = TRUE) # get the p-values for each factor
+  if(!inherits(res, "try-error")) {
+    pvalues[f] <- res$PVAL
+  }
+}
+
+ggplot(data.frame(Factors = 1:5, pvalues = pvalues), 
+       aes(x = Factors, y = pvalues)) +
+  geom_line(color = "#046C9A", size = 1) +
+  geom_point(color = "#046C9A", size = 3) +
+  labs(
+    title = "Factor Adequacy Test",
+    x = "Number of Factors",
+    y = "p-value"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14)
+  )
+```
+
+# Factor Analysis
+
+```{r echo=FALSE, include=TRUE, fig.show='hold', warning=FALSE, message=FALSE, fig.width=12, fig.height=8}
+faresult <- factanal(X.log, factors=5)
+print(fa.diagram(faresult$loadings, digits=4))
+```
+
+# Confusion matrix
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+library(e1071)
+library(caret)
+y  <- factor(data$geoStruct)
+Xl <- scale(as.data.frame(X_log_matrix))
+# Leave-One-Out Cross-Validation
+n <- nrow(Xl); pred <- factor(rep(NA,n), levels=levels(y))
+for(i in 1:n){
+  fit_i <- naiveBayes(x=Xl[-i,], y=y[-i])
+  pred[i] <- predict(fit_i, newdata=Xl[i,,drop=FALSE])
+}
+
+# ensure factors have same levels
+pred <- factor(pred, levels = levels(y))
+y <- factor(y, levels = levels(y))
+
+# create confusion matrix table
+cm_table <- table(Predicted = pred, True = y) %>%
+  as.data.frame() %>%
+  rename(Freq = Freq)
+
+# square matrix: make sure levels are respected for plotting
+cm_table$Predicted <- factor(cm_table$Predicted, levels = levels(y))
+cm_table$True <- factor(cm_table$True, levels = levels(y))
+
+ggplot(cm_table, aes(x = True, y = Predicted, fill = Freq)) +
+  geom_tile(color = NA, size = 0.8) +
+  geom_text(aes(label = Freq), size = 6, family = "Times New Roman", fontface = "bold") +
+  scale_fill_gradient(low = "white", high = "#046C9A") +
+  labs(
+    x = "True Class",
+    y = "Predicted Class",
+    title = "LOOCV Confusion Matrix"
+  ) +
+  theme_minimal(base_family = "Times New Roman") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    panel.grid = element_blank()
+  ) +
+  coord_fixed() 
+```
 ```{css}
 .reveal {
   font-family: "Times New Roman", Georgia, serif; /* main slide font */
