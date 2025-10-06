@@ -23,7 +23,7 @@ editor: visual
 -   Analysis of hydrochemical and radiological data of mineral and thermal waters in Serbia.
 -   Original paper:
     -   PCA: 4 main factors explaining 74.2% of total variance
-        -   3 Groups emerged - with 83.3% correct classification.
+   -   3 Groups emerged - with 83.3% correct classification.
     -   HCA: identified 4 main groups and 8 subgroups
 
 ## Serbian springs
