@@ -107,7 +107,21 @@ editor: visual
 
 ## Correlation Heatmap
 
-```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=1, out.width='90%', out.height='80%'}
+::::{.columns}
+
+:::{.column}
+
+- Certain variables highly correlated:
+  - Electrical conductivity & total dissolved solids
+  - Potassium (K) and Bicarbonate (HCO)
+  - Sodium (Na) and Bicarbonate (HCO)
+- Others moderately correlated. 
+
+:::
+
+:::{.column}
+
+```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
 library(corrplot)
 library(dplyr)
 library(GGally)
@@ -136,9 +150,24 @@ corrplot(cor_mat,
 )
 ```
 
+:::
+
+::::
+
 ## Boxplots
 
-```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='95%', out.height='90%'}
+::::{.columns}
+
+:::{.column}
+
+- Variables standardized to allow comparison. 
+- Data set characterized by high variation, right skew, and outliers. 
+
+:::
+
+:::{.column}
+
+```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
 library(tidyr)
 library(wesanderson)
 library(ggplot2)
@@ -174,7 +203,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
        title = "Serbian Spa Waters: Boxplots of All Variables (Z-scored)") +
   theme_minimal(base_family = "Times New Roman") + 
   theme(
-    plot.title = element_text(face = "bold", size = 26),  
+    plot.title = element_text(face = "bold", size = 22),  
     axis.title = element_text(size = 20),                  
     axis.text.x = element_text(size = 16), 
     axis.text.y = element_text(size = 16),
@@ -184,18 +213,22 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   )
 ```
 
+:::
+
+::::
+
 ## Checking for multivariate normality
 
 ::::{.columns}
 
-:::{.column width="35%"}
+:::{.column width="40%"}
 - Assumption of multivariate normality not satisfied.
 - Original paper used Box-Cox transformation.
   - Sensitive to outliers.
 - Log transformation needed. 
 :::
 
-:::{.column width="65%}
+:::{.column width="60%}
 ```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Fit MANOVA model using geoStruct as grouping
 fit <- manova(as.matrix(X) ~ data$geoStruct)
@@ -228,7 +261,7 @@ abline(0,1,col="#046C9A", lwd = 2)
 
 ## Re-checking for normality
 
-```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=6, fig.height=5, dpi=100}
 
 # Log transforming numeric variables and adding them into dataset as new columns
 data$log.tempCels <- log(data$tempCels)
@@ -274,7 +307,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
 
 ## Re-checking for normality
 
-```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
 
 X_log_matrix <- as.matrix(X.log[, !names(X.log) %in% ".row"])
 
@@ -307,7 +340,7 @@ abline(0,1,col="#046C9A", lwd = 2)
 
 ## PCA
 
-```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, fig.height=6, dpi=100}
 pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
 
 # variance explained
@@ -337,7 +370,7 @@ ggplot(df, aes(x = PC, y = Variance)) +
 
 ## PCA 
 
-```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, fig.height=6, dpi=100}
 library(knitr)
 library(kableExtra)
 
