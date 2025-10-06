@@ -395,7 +395,7 @@ kable(pca_wide8, format = "html", booktabs = TRUE) %>%
 ## PCA
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
-pc_loadings <- pca_fit$rotation[,1:8]
+pc_loadings <- pca_fit$rotation[,1:4]
 pc_loadings <- round(pc_loadings, 3)
 
 pc_loadings_df <- as.data.frame(pc_loadings)
