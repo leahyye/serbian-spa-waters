@@ -22,18 +22,40 @@ editor: visual
 # Introduction
 
 - Analysis of hydrochemical and radiological data of mineral and thermal waters in Serbia.
-- Original authors used PCA and HCA to classify the waters with respect to their geotectonic units. 
-- Factor analysis was used to try to improve upon the original results. 
+- Original paper:
+  - PCA: 4 main factors explaining 74.2% of total variance
+    - 3 Groups emerged - with 83.3% correct classification.
+  - HCA: identified 4 main groups and 8 subgroups
+
+# Serbian springs
+
+::::{.columns}
+
+:::{.column width="50%"}
+
+- Many mineral, thermal, and thermo-mineral water springs.
+- Some used for drinking water, others as curative spas.
+- Varied composition depends on the aquifer host rocks' chemical composition, flow conditions, and residence time in the aquifer.
+- Geologically highly complex.
+
+:::
+
+:::{.column width="50%"}
+
+![](Screenshot_20251005_140707.png)
+:::
+
+::::
 
 # About the dataset
 
 - 30 observations
 - 1 categorical variable
   - Samples collected from four geological structures:
-    - Hydrogeological basins
-    - Karstic terrains
-    - Volcanogenic massifs
-    - Metamorphic regions 
+    1. Hydrogeological basins
+    2. Karstic terrains
+    3. Volcanogenic massifs
+    4. Metamorphic regions 
     
 # 12 numerical variables 
 
@@ -44,18 +66,31 @@ editor: visual
 |EC          | Electrical conductivity |$\mu$S/cm|
 |TS          | Total disolved solids |g/L|
 |Ca$^{2+}$   | Calcium |mg/L|
-|Mg$^{2+}$   | Magnesium |mg/L|
+|Mg$^{2+}$   | Magnesium ||
 
 # 12 numerical variables
 
 | Variable   | Description | Units |
 |------------|-------------|-------|
 |Na$^{+}$    | Sodium |mg/L|
-|K$^{+}$     | Potassium |mg/L|
-|Cl$^{-}$    | Chlorine |mg/L|
-|SO$^{2-}_4$ | Sulfate |mg/L|
-|HCO$^{-}_3$ | Bicarbonate |mg/L|
-|SiO$_2$     | Silica, dissolved silicon dioxide |mg/L|
+|K$^{+}$     | Potassium ||
+|Cl$^{-}$    | Chlorine ||
+|SO$^{2-}_4$ | Sulfate ||
+|HCO$^{-}_3$ | Bicarbonate ||
+|SiO$_2$     | Silica, dissolved silicon dioxide ||
+
+# Missing radiological variables
+
+- Six radiological variables not publicly available. 
+
+| Variable   | Description | Units |
+|------------|-------------|-------|
+|GA    | Gross alpha activities| mBq/L|
+|GB    | Gross beta activities ||
+|$^{238}$U    | Uranium isotope ||
+|$^{228}$R | Radium isotope ||
+|$^{226}$R |  ||
+|$^{40}$K     | Potassium isotope ||
 
 # Observations per geological structure 
 
@@ -154,8 +189,10 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
 ::::{.columns}
 
 :::{.column width="35%"}
-- Assumption of multivariate normality not satisfied
-- Log transformations needed
+- Assumption of multivariate normality not satisfied.
+- Original paper used Box-Cox transformation.
+- Sensitive to outliers.
+- Log transformation needed. 
 :::
 
 :::{.column width="65%}
