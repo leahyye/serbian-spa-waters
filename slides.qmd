@@ -424,7 +424,7 @@ kable(pc_loadings_bold, escape = FALSE, format = "html", booktabs = TRUE) %>%
 mu <- colMeans(X)
 S  <- cov(X)
 d2 <- mahalanobis(X, center = mu, cov = S)
-cut <- qchisq(0.95, df = ncol(X))
+cut <- qchisq(0.94, df = ncol(X))
 outliers <- d2 > cut
 
 # Add to PCA plot data
