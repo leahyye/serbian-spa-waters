@@ -492,6 +492,46 @@ ggplot(data.frame(Factors = 1:5, pvalues = pvalues),
   )
 ```
 
+## Factor Analysis Loadings
+
+```{r}
+library(knitr)
+library(kableExtra)
+
+# Create the results table
+fa_results <- data.frame(
+  Factor = c("Factor 1", "Factor 2", "Factor 3", "Factor 4", "Factor 5"),
+  `SS Loadings` = c(4.173, 2.843, 1.378, 1.120, 0.379),
+  `Proportion Var` = c(0.348, 0.237, 0.115, 0.093, 0.032),
+  `Cumulative Var` = c(0.348, 0.585, 0.700, 0.793, 0.824)
+)
+
+# Create the statistical test info
+test_info <- data.frame(
+  Statistic = c("Chi-square", "Degrees of freedom", "p-value"),
+  Value = c("23.25", "16", "0.107")
+)
+
+# Display the main results table
+kable(fa_results, format = "html", booktabs = TRUE, align = c("l", "r", "r", "r"),
+      caption = "Factor Analysis Variance Explained") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), 
+                font_size = 20,
+                full_width = FALSE) %>%
+  column_spec(1, bold = TRUE) %>%
+  row_spec(5, background = "#FD6467")  # Highlight the weak 5th factor
+
+# Display the statistical test
+cat("\n\n")
+kable(test_info, format = "html", booktabs = TRUE, align = c("l", "r"),
+      caption = "Factor Adequacy Test") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                font_size = 18,
+                full_width = FALSE) %>%
+  row_spec(3, background = ifelse(0.107 > 0.05, "#046C9A", "#FD6467"))  # blue if p > 0.05
+```
+
+
 ## Factor Analysis Diagram
 
 ```{r echo=FALSE}
