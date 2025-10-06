@@ -32,8 +32,8 @@ editor: visual
 ::: {.column width="50%"}
 -   Many mineral, thermal, and thermo-mineral water springs.
 -   Some used for drinking water, others as curative spas.
--   Varied composition depends on the aquifer host rocks' chemical composition, flow conditions, and residence time in the aquifer.
 -   Geologically highly complex.
+-   Varied composition depends on the aquifer host rocks' chemical composition, flow conditions, and residence time in the aquifer.
 :::
 
 ::: {.column width="50%"}
