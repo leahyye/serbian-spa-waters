@@ -109,19 +109,18 @@ editor: visual
 
 ::::{.columns}
 
-:::{.column}
+:::{.column width="40%"}
 
 - Certain variables highly correlated:
   - Electrical conductivity & total dissolved solids
-  - Potassium (K) and Bicarbonate (HCO)
-  - Sodium (Na) and Bicarbonate (HCO)
-- Others moderately correlated. 
+  - Potassium (K) & Bicarbonate (HCO)
+  - Sodium (Na) & Bicarbonate (HCO)
 
 :::
 
-:::{.column}
+:::{.column width="60%"}
 
-```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
+```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=7, fig.height=7, dpi=100}
 library(corrplot)
 library(dplyr)
 library(GGally)
@@ -158,14 +157,14 @@ corrplot(cor_mat,
 
 ::::{.columns}
 
-:::{.column}
+:::{.column width="40%"}
 
 - Variables standardized to allow comparison. 
 - Data set characterized by high variation, right skew, and outliers. 
 
 :::
 
-:::{.column}
+:::{.column width="60%"}
 
 ```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
 library(tidyr)
@@ -200,7 +199,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   scale_fill_manual(values = colors) + 
   labs(x = NULL, 
        y = "Scaled value (z-score)",
-       title = "Serbian Spa Waters: Boxplots of All Variables (Z-scored)") +
+       title = "Boxplots: All Variables (Z-scored)") +
   theme_minimal(base_family = "Times New Roman") + 
   theme(
     plot.title = element_text(face = "bold", size = 22),  
@@ -221,14 +220,16 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
 
 ::::{.columns}
 
-:::{.column width="40%"}
+:::{.column}
+- MANOVA residual Mahalanobis distances vs. theoretical 
+$\chi^2$ distribution as a diagnostic.
 - Assumption of multivariate normality not satisfied.
 - Original paper used Box-Cox transformation.
   - Sensitive to outliers.
 - Log transformation needed. 
 :::
 
-:::{.column width="60%}
+:::{.column}
 ```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Fit MANOVA model using geoStruct as grouping
 fit <- manova(as.matrix(X) ~ data$geoStruct)
@@ -244,7 +245,7 @@ df <- ncol(res)
 
 # QQ-plot
 par(family = "serif",
-    cex.main = 2.5,
+    cex.main = 2,
     cex.lab = 2,
     cex.axis = 1.8,
     mar = c(5, 6, 4, 2))
@@ -260,6 +261,17 @@ abline(0,1,col="#046C9A", lwd = 2)
 ::::
 
 ## Re-checking for normality
+
+::::{.columns}
+
+:::{.column width="40%"}
+
+- Boxplots far more symmetric after log-transformation.
+- Some outliers still present, but fewer.
+
+:::
+
+:::{.column width="60%"}
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=6, fig.height=5, dpi=100}
 
@@ -294,7 +306,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   coord_flip() +
   scale_fill_manual(values = colors) + 
   labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Serbian Spa Waters: Boxplots of All Log Transformed Variables (Z-scored)") +
+       title = "Boxplots: Log Transformed Variables (Z-scored)") +
   theme_minimal(base_family = "Times New Roman") + 
   theme(
     panel.grid.major = element_line(color = "grey80", size = 0.3),
@@ -305,7 +317,22 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   )
 ```
 
+:::
+
+::::
+
 ## Re-checking for normality
+
+::::{.columns}
+
+:::{.column width="40%"}
+
+- Improved performance of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution.
+- Deviations remain. 
+
+:::
+
+:::{.column width="60%"}
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
 
@@ -326,8 +353,8 @@ df_log <- ncol(res_log)
 
 # QQ-plot
 par(family = "serif",
-    cex.main = 2.5,
-    cex.lab = 2,
+    cex.main = 2,
+    cex.lab = 1.8,
     cex.axis = 1.8,
     mar = c(5, 6, 4, 2))
 
@@ -337,6 +364,10 @@ qqplot(qchisq(ppoints(nrow(res_log)), df = df_log), d2_res_log,
        ylab = expression(paste("Ordered residual ", d[M]^2)))
 abline(0,1,col="#046C9A", lwd = 2)
 ```
+
+:::
+
+::::
 
 ## PCA
 
