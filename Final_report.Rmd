@@ -279,16 +279,19 @@ Moving on to PCA, we can see (Table 2) that PC1 explains a lot of the variance (
 
 ```{r echo=FALSE}
 
-loadings <- pca_fit$rotation
 
-loadings_df <- as.data.frame(loadings)
-loadings_df$Variable <- rownames(loadings_df)
+pc_loadings <- pca_fit$rotation[,1:4]
+pc_loadings <- round(pc_loadings, 3)
 
-loadings_df <- loadings_df[, c("Variable", paste0("PC", 1:4))]
+pc_loadings_df <- as.data.frame(pc_loadings)
 
-rownames(loadings_df) <- NULL
+pc_loadings_bold <- pc_loadings_df %>%
+  mutate(across(everything(), ~cell_spec(
+    ., 
+    bold = abs(.) > 0.3
+  )))
 
-knitr::kable(loadings_df, digits = 3, caption = "Serbian Spa Variable Influence on Principal Components", align = "c")
+kable(pc_loadings_bold, escape = FALSE, format = "html", booktabs = TRUE) %>%
 
 ```
 
