@@ -383,7 +383,8 @@ loadings_df <- loadings_df[, c("Variable", paste0("PC", 1:4))]
 
 rownames(loadings_df) <- NULL
 
-knitr::kable(loadings_df, digits = 3, caption = "Serbian Spa Variable Influence on Principal Components", align = "c")
+knitr::kable(loadings_df, digits = 3, caption = "Serbian Spa Variable Influence on Principal Components", align = "c")%>%
+  kable_styling(latex_options = "H", position = "center")
 
 ```
 
@@ -420,7 +421,7 @@ surprising_sites <- data[outliers, c("waterSource", "tempCels", "elecCond", "tot
 
 knitr::kable(surprising_sites,
              format = "latex",
-             caption = "Table: Water sources with at least one variable > 3 standard deviations from the mean",
+             caption = "Water sources with at least one variable > 3 standard deviations from the mean",
              align = "c",
              digits = 2) %>%
   kable_styling(latex_options = "H", position = "center")
@@ -480,6 +481,14 @@ ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
   theme(legend.position = "right")
 
 ```
+Plotting the Mahalanobis distance against the first two principle components (Fig. 7)
+gives a multivariate view of the outliers, in terms of their overall chemical
+composition rather than a single variable. Using the Mahalanobis distance with
+a 95% Chi-Squared significance, another five sites were identified as outliers-
+these are the same five as previously identified as having extreme values for
+individual variables, with the exception that Junakovic is no longer an outlier,
+and Bujanovacka has replaced it.
+
 ```{r echo = FALSE}
 outlier_table <- data.frame(
   Water_Source = data$waterSource[outliers],
@@ -497,17 +506,35 @@ knitr::kable(
 ```
 
 
-The PCA score plot gives a multivariate view, showing which sites are extreme 
-in terms of their overall chemical profiles rather than a single ion. Along the 
-first principal component (PC1, representing overall mineralisation), Ribarska 
-and Prolom score strongly negative, indicating highly mineralised waters, while 
-Kanjiža lies on the opposite end with a very dilute profile. Along the second 
-principal component (PC2, contrasting hardness with temperature/pH), Vuča sits 
-at the upper extreme with unusually high hardness, whereas Prolom and Ribarska 
-again fall at the lower end, consistent with warmer, more alkaline waters. Thus, 
-while the z-score analysis highlights individual extremes, the PCA identifies 
-different sites as “surprising” because of their distinctive multivariate 
-signatures.
+Along the first PC, Selters, Bujanovacka and Tularska score highly. 
+This indicates high mineralisation and ionisation in these samples, and is 
+consistent with our earlier finding of Selters as having high concentrations 
+of chloride, sodium, and bicarbonate and Tulaska with high concentrations of
+sodium and bicarbonate. Veluce also scores highly on concentrations
+of bicarbonate, giving it a relatively high score on PC1 but not as extreme.
+
+Along PC2, Vranskja has a strong negative score. Temperature has a strong 
+negative influence on PC2, and Vranskja stands out among the sites for its
+extremely high temperature (near boiling, 95 $^{\circ}$C). 
+
+
+```{r echo=FALSE}
+# Filter for water source "bujanovacka"
+bujanovacka_data <- subset(data, waterSource == "Bujanovacka", 
+                           select = c("waterSource", "tempCels", "elecCond", 
+                                      "totSolid", "Na", "Cl", "HCO"))
+
+knitr::kable(
+  bujanovacka_data,
+  caption = "Water Quality Variables for Bujanovacka",
+  align = "c"
+) %>%
+  kable_styling(latex_options = "H", position = "center")
+```
+
+The Bujanovacka site's high score in PC1 is explained by its high concentration
+of Bicarbonate (3086 mg/L) and Sodium (2650 mg/L).
+
 
 ## Factor Analysis
 
@@ -574,18 +601,24 @@ knitr::kable(stats_matrix, "latex", booktabs = TRUE, caption = "Summary Statisti
 Factor 5's loading is small (0.379), and only contributes 3.1% of the overall
 variance. So we will go back to four factors, and visualize the result.
 
-```{r echo=FALSE}
-fa.diagram(faresult$loading[,1:4], digits=4, main = "")
-title(main = "Fig. 9: Factor analysis" )
+```{r echo=FALSE, fig.width=11.5, fig.align='center'}
+# Set wider margins to avoid clipping (bottom, left, top, right)
+par(mar = c(5, 9, 4, 2))  # Increase left margin
+
+# Plot factor diagram
+fa.diagram(faresult$loading[, 1:4], digits = 4, main = "")
+
+# Add title
+title(main = "Fig. 9: Factor analysis")
 ```
 
 The red arrows indicate negative variables.
 
--   F1: Total Solid (+), Electrical Conductivity (+), Na (+), HCO (+), K (+), 
-SiO (+).\
--   F2: Mg2 (+), Ca2 (+), pH (-), tempCels (-).\
--   F3: Cl (+).\
--   F4: SO2 (+).
+-   F1: Total Solid (+ 0.907), Electrical Conductivity (+ 0.90), Na (+ 0.85), HCO (+ 0.78), K (+ 0.72), 
+SiO (+ 0.63).\
+-   F2: Mg2 (+ 0.92), Ca2 (+ 0.85), pH (- 0.75), tempCels (- 0.32).\
+-   F3: Cl (+ 0.93).\
+-   F4: SO2 (+ 0.99).
 
 Factor analysis selected 4 factors with 79% variance explained, whereas PCA 
 preferred 4 PCs with 85% variance explained. The factors show that there are 4 
