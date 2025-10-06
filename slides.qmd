@@ -462,9 +462,9 @@ ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
 
 ```
 
-## Factor Analysis
+## Factor Analysis: Factor Adequacy test
 
-```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+```{r echo=FALSE, include=TRUE, warning=FALSE, message=FALSE}
 library(psych)
 X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
 
@@ -481,7 +481,6 @@ ggplot(data.frame(Factors = 1:5, pvalues = pvalues),
   geom_line(color = "#046C9A", size = 1) +
   geom_point(color = "#046C9A", size = 3) +
   labs(
-    title = "Factor Adequacy Test",
     x = "Number of Factors",
     y = "p-value"
   ) +
@@ -493,11 +492,11 @@ ggplot(data.frame(Factors = 1:5, pvalues = pvalues),
   )
 ```
 
-## Factor Analysis
+## Factor Analysis Diagram
 
-```{r echo=FALSE, include=TRUE, fig.show='hold', warning=FALSE, message=FALSE, fig.width=12, fig.height=8}
+```{r echo=FALSE}
 faresult <- factanal(X.log, factors=5)
-print(fa.diagram(faresult$loadings, digits=4))
+fa.diagram(faresult$loadings, digits=4)
 ```
 
 ## Confusion matrix
