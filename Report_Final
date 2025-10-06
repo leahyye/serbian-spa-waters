@@ -26,7 +26,9 @@ library(MASS)
 # **Introduction**
 
 This study analyzed hydrochemical data for mineral and thermal waters in 
-Serbian territory. The authors used principal component analysis (PCA) and 
+Serbian territory. The diversity of the composition of these waters reflects on 
+the geological and geographical diversity of the Serbian territory on which they
+are located. The authors used principal component analysis (PCA) and 
 hierarchical cluster analysis (HCA) to characterize the chemical composition 
 and natural radioactivity of these water samples, understand the relationships 
 between the variables measured, and classify the waters with respect to their 
@@ -70,9 +72,7 @@ spectrophotometry.
 Where Hyodrological Basins and Karstic terrains have 5 observations each, 
 Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 
 observations. This is an unbalanced dataset since there are varying observations 
-per group.
-
-There are no duplicates, missing data, zeros, negatives, NAs or NULL values in 
+per group. There are no duplicates, missing data, zeros, negatives, NAs or NULL values in 
 the dataset.
 
 Exploratory data analysis will assess basic summary statistics of the data.
@@ -90,10 +90,10 @@ a log transformation on the data and use these transformed variables for our
 analysis.
 
 We will assess the validity of the paper's geoStruct groups based on the data,
-using the methods of MANOVA and Naive Bayes Classifier, as our EDA revealed
+using the methods of MANOVA and Naive Bayes Classifier, as a group covariance check revealed
 that the data violates the assumptions for Linear Discriminant Analysis.
 
-We will then use Factor Analysis to attempt to improve on the paper's model 
+We will then use factor analysis to attempt to improve on the paper's model 
 parsimony; factor analysis is better for model selection since it doesn't 
 include noise like PCA, and maintains parsimony. 
 
@@ -131,7 +131,7 @@ kable(summary_formatted, caption = "Summary Statistics for Numeric Columns", ali
   column_spec(1:ncol(summary), extra_css = "font-family: serif;")  
 ```
 
-This dataset is characterized by high variability. This is likely due to the 
+This dataset is characterized by high variability (Table 1). This is likely due to the 
 different water sources. pH is more consistent, ranging from neutral (6.5) to 
 slightly basic (9.0), which are fairly typical values for water in nature. The 
 range of temperatures recorded in this dataset is from 14.40 to 95.00 degrees 
@@ -216,7 +216,7 @@ abline(0,1,col="steelblue4")
 ```
 
 The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical 
-$\chi^2$ distribution provides a diagnostic for assessing multivariate 
+$\chi^2$ distribution (Fig. 2) provides a diagnostic for assessing multivariate 
 normality. If the residuals were perfectly normal, the points would lie close to 
 the 45° line. In this case, the points deviate fairly evenly across the range of 
 quantiles, rather than only at one end, indicating that the residuals are not an 
@@ -262,11 +262,11 @@ ggplot(box_long, aes(x = variable, y = value)) +
   geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
   coord_flip() +
   labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Fig.3: Boxplots of log transformed Serbian spa water variables (z-scored)") +
+       title = "Fig. 3: Boxplots of log transformed Serbian spa water variables (z-scored)") +
   theme(panel.grid.minor = element_blank())
 ```
 
-The boxplots are far more symmetric than with the untransformed data, showing
+The boxplots (Fig. 3) are far more symmetric than with the untransformed data, showing
 more conformity with the normal distribution. However, we can clearly see the
 presence of outliers, particularly with the variable $\mathrm{Mg^{2+}}$, with
 four observations at least 2 standard deviations below the mean.
@@ -295,7 +295,8 @@ qqplot(qchisq(ppoints(nrow(res_log)), df = p), d2_res_log,
 abline(0,1,col="steelblue4")
 ```
 
-The points follow the line much more closely, only slight deviations from the 
+On the QQ plot for log transformed variables (Fig. 4), the points follow the 
+line much more closely, with only slight deviations from the 
 line at low and high values. The log transformed data much more closely 
 follows a multivariate normal distribution.
 
@@ -325,12 +326,13 @@ corrplot(
 
 ``` 
 
-Electrical conductivity, total solids, sodium, potassium, and chloride form a 
-strongly correlated cluster, indicating they vary together across spa waters. 
-In contrast, pH shows moderate negative correlations with several ions (e.g., 
-C$\mathrm{Ca^{2+}}$, $\mathrm{Mg^{2+}}$, $\mathrm{HCO_3^-}$), suggesting 
-different geochemical influences. Overall, the matrix highlights both tightly 
-linked chemical groups and variables with weaker or opposing trends.
+From the correlation matrix (Fig. 5), we can see that electrical conductivity, 
+total solids, sodium, potassium, and chloride form a strongly correlated 
+cluster, indicating they vary together across spa waters. In contrast, pH shows 
+moderate negative correlations with several ions (e.g., C$\mathrm{Ca^{2+}}$, 
+$\mathrm{Mg^{2+}}$, $\mathrm{HCO_3^-}$), suggesting different geochemical 
+influences. Overall, the matrix highlights both tightly linked chemical groups 
+and variables with weaker or opposing trends.
 
 
 ## PCA
@@ -389,22 +391,15 @@ knitr::kable(loadings_df, digits = 3, caption = "Serbian Spa Variable Influence 
 ```
 
 
+Table 3 displays the influence of individual variables on the four principal components. 
 In PC1, $HCO_3^-$ (0.388), $Na^+$ (0.345), elecCond (0.378), $K^+$ (0.376), 
 and totSolid(0.367) have the highest influence. PC1 strongly correlates with 
 variables relating to major ions and total dissolved content. PC1 measures the 
 overall mineralisation and ionisation levels of the water. Samples with high PC1 
-scores have high mineralisation. 
-
-In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352),
+scores have high mineralisation. In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352),
 and $Na^+$ (-0.301), have the strongest influence. PC2 separates water with high 
 calcium and magnesium (hardness) from waters at higher temperatures. This could 
-mean that there is a difference between hard, cold waters and warmer waters.
-
-In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters 
-that have more sulfate are warmer.
-
-In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest 
-influence. Waters with higher chlorine levels have less silicone and are warmer.
+mean that there is a difference between hard, cold waters and warmer waters. In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters that have more sulfate are warmer. In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest influence. Waters with higher chlorine levels have less silicone and are warmer.
 
 ## Surprising observations
 
@@ -429,7 +424,7 @@ knitr::kable(surprising_sites,
 ```
 
 From the standardised $n=30$ observations, five springs are flagged as clear 
-outliers: Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites 
+outliers (Table 4): Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites 
 has at least one measurement more than three standard deviations from the mean. 
 Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total 
 dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high 
@@ -506,7 +501,7 @@ knitr::kable(
 ```
 
 
-Along the first PC, Selters, Bujanovacka and Tularska score highly. 
+Along the first PC, Selters, Bujanovacka and Tularska score highly (Table 5). 
 This indicates high mineralisation and ionisation in these samples, and is 
 consistent with our earlier finding of Selters as having high concentrations 
 of chloride, sodium, and bicarbonate and Tulaska with high concentrations of
@@ -533,7 +528,7 @@ knitr::kable(
 ```
 
 The Bujanovacka site's high score in PC1 is explained by its high concentration
-of Bicarbonate (3086 mg/L) and Sodium (2650 mg/L).
+of Bicarbonate (3086 mg/L) and Sodium (2650 mg/L) (Table 6).
 
 
 ## Factor Analysis
@@ -562,9 +557,9 @@ ggplot(data.frame(Factors = 1:5, pvalues = pvalues),
   ylab("p-value") +
   labs(title = "Fig. 8: Factor Adequacy Test")
 ```
-The p-values in this table check the following:
+The p-values in Fig.8 check the following:
 $H_0:$ k factors are sufficient\
-$H_1:$ More than k factors are needed
+$H_1:$ More than k factors are needed.
 
 Therefore, 5 factors is sufficient as p-value is \> 0.05. 4 or less factors is 
 not sufficient (p-values \< 0.03).
@@ -598,7 +593,7 @@ knitr::kable(stats_matrix, "latex", booktabs = TRUE, caption = "Summary Statisti
 
 ```
 
-Factor 5's loading is small (0.379), and only contributes 3.1% of the overall
+We can see from Table 7 that Factor 5's loading is small (0.379), and only contributes 3.1% of the overall
 variance. So we will go back to four factors, and visualize the result.
 
 ```{r echo=FALSE, fig.width=11.5, fig.align='center'}
@@ -612,7 +607,7 @@ fa.diagram(faresult$loading[, 1:4], digits = 4, main = "")
 title(main = "Fig. 9: Factor analysis")
 ```
 
-The red arrows indicate negative variables.
+The red arrows in Fig. 9 indicate negative variables.
 
 -   F1: Total Solid (+ 0.907), Electrical Conductivity (+ 0.90), Na (+ 0.85), HCO (+ 0.78), K (+ 0.72), 
 SiO (+ 0.63).\
@@ -620,7 +615,7 @@ SiO (+ 0.63).\
 -   F3: Cl (+ 0.93).\
 -   F4: SO2 (+ 0.99).
 
-Factor analysis selected 4 factors with 79% variance explained, whereas PCA 
+Factor analysis selected 4 factors with 79% variance explained (Table 7), whereas PCA 
 preferred 4 PCs with 85% variance explained. The factors show that there are 4 
 water types:
 
@@ -666,7 +661,7 @@ ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
 
 After testing the assumptions of Linear Discriminant Analysis (LDA), it becomes 
 clear that the method is not suitable for this dataset. The group covariance 
-ellipses display different shapes and orientations, which indicates that the 
+ellipses(Fig. 10) display different shapes and orientations, which indicates that the 
 groups do not share a common covariance structure. Since LDA requires equal 
 covariance matrices across classes, this assumption is violated and the method 
 cannot be applied reliably.
