@@ -395,25 +395,29 @@ kable(pca_wide8, format = "html", booktabs = TRUE) %>%
 ## PCA
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
-pc_loadings <- pca_fit$rotation[,1:4]
-pc_loadings <- round(pc_loadings, 3)
+# Get loadings from PCA (PC1–PC4)
+loadings <- pca_fit$rotation[, 1:4]
+loadings_df <- as.data.frame(loadings)
 
-pc_loadings_df <- as.data.frame(pc_loadings)
+# Add variable names as a column
+loadings_df$Variable <- rownames(loadings_df)
+loadings_df <- loadings_df[, c("Variable", paste0("PC", 1:4))]
 
-pc_loadings_bold <- pc_loadings_df %>%
-  mutate(across(everything(), ~cell_spec(
-    ., 
-    bold = abs(.) > 0.3
-  )))
+# Bold values where abs(loading) > 0.3
+loadings_df <- loadings_df %>%
+  mutate(across(starts_with("PC"), 
+                ~ cell_spec(round(., 3), bold = abs(.) > 0.3)))
 
-kable(pc_loadings_bold, escape = FALSE, format = "html", booktabs = TRUE) %>%
+# Create and style the HTML table
+kable(loadings_df, format = "html", escape = FALSE,
+      caption = "Serbian Spa Variable Influence on Principal Components",
+      booktabs = TRUE) %>%
   kable_styling(
     bootstrap_options = c("striped", "hover", "condensed"),
     full_width = FALSE,
-    font_size = 26,
-    html_font = "Times New Roman"
+    font_size = 20
   ) %>%
-  row_spec(0, bold = TRUE, font_size = 28)
+  row_spec(0, bold = TRUE)
 ```
 
 ## PC2 vs. PC1 with outliers
