@@ -539,9 +539,46 @@ faresult <- factanal(X.log, factors=5)
 fa.diagram(faresult$loadings, digits=4)
 ```
 
-## Confusion matrix
+## Visual Check of Group Covariance
+::::: columns
+::: {.column width="40%"}
+-   Groups show different shapes and orientations.
 
-```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
+-   Covariance structures not equal.
+
+-   LDA not suitable for this dataset.
+:::
+
+::: {.column width="60%"}
+
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.9,fig.height=6, out.width="100%"}
+library(MASS)
+lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
+lda_fit <- lda(geoStruct ~ ., data = lda_data)
+lda_scores <- predict(lda_fit)$x
+
+plot_data <- data.frame(lda_scores, Group = as.factor(lda_data$geoStruct))
+
+ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
+  geom_point(size = 3) +
+  stat_ellipse(level = 0.95) +
+  labs(title = "Fig. 10: Visual Check of Group Covariance",
+       x = "Linear Discriminant 1",
+       y = "Linear Discriminant 2") +
+  theme_minimal()
+```
+:::
+:::::
+## Confusion matrix
+::::: columns
+::: {.column width="40%"}
+-  Some overlap across groups — several misclassifications.
+
+-  Classification accuracy is modest
+:::
+
+::: {.column width="60%"}
+```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=6, out.width="100%"}
 library(e1071)
 library(caret)
 y  <- factor(data$geoStruct)
@@ -573,7 +610,7 @@ ggplot(cm_table, aes(x = True, y = Predicted, fill = Freq)) +
   labs(
     x = "True Class",
     y = "Predicted Class",
-    title = "LOOCV Confusion Matrix"
+    title = "Figure 11: LOOCV Confusion Matrix"
   ) +
   theme_minimal(base_family = "Times New Roman") +
   theme(
@@ -584,6 +621,22 @@ ggplot(cm_table, aes(x = True, y = Predicted, fill = Freq)) +
   ) +
   coord_fixed() 
 ```
+:::
+:::::
+
+## Summary
+
+
+
+
+-  Re-analysed 30 Serbian spa sites using 12 chemical variables
+
+-  Original study (Tanasković et al.) used 18 variables 
+
+-  Radiological variables unavailable publicly
+-  Differences reflect methodological scope - radiological model vs our interpretable, chemistry-only approach.
+
+-  Geological signal still partially recoverable; integration of radiological variables or modern classifiers could enhance separation.
 
 ```{css}
 .reveal {
