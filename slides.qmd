@@ -11,7 +11,7 @@ format:
 editor: visual
 ---
 
-# Group 6 
+## Group 6 
 
 -   Elizabeth
 -   Claude
@@ -19,7 +19,7 @@ editor: visual
 -   Harry
 
 
-# Introduction
+## Introduction 
 
 - Analysis of hydrochemical and radiological data of mineral and thermal waters in Serbia.
 - Original paper:
@@ -27,7 +27,7 @@ editor: visual
     - 3 Groups emerged - with 83.3% correct classification.
   - HCA: identified 4 main groups and 8 subgroups
 
-# Serbian springs
+## Serbian springs
 
 ::::{.columns}
 
@@ -47,7 +47,7 @@ editor: visual
 
 ::::
 
-# About the dataset
+## About the dataset
 
 - 30 observations
 - 1 categorical variable
@@ -57,7 +57,7 @@ editor: visual
     3. Volcanogenic massifs
     4. Metamorphic regions 
     
-# 12 numerical variables 
+## 12 numerical variables 
 
 | Variable   | Description | Units |
 |------------|-------------|-------|
@@ -68,7 +68,7 @@ editor: visual
 |Ca$^{2+}$   | Calcium |mg/L|
 |Mg$^{2+}$   | Magnesium ||
 
-# 12 numerical variables
+## 12 numerical variables
 
 | Variable   | Description | Units |
 |------------|-------------|-------|
@@ -79,7 +79,7 @@ editor: visual
 |HCO$^{-}_3$ | Bicarbonate ||
 |SiO$_2$     | Silica, dissolved silicon dioxide ||
 
-# Missing radiological variables
+## Missing radiological variables
 
 - Six radiological variables not publicly available. 
 
@@ -92,7 +92,7 @@ editor: visual
 |$^{226}$R |  ||
 |$^{40}$K     | Potassium isotope ||
 
-# Observations per geological structure 
+## Observations per geological structure 
 
 | Geological Structure       | Number of Observations |
 |----------------------------|----------------------|
@@ -105,7 +105,7 @@ editor: visual
 - Unbalanced data set
 
 
-# Correlation Heatmap
+## Correlation Heatmap
 
 ```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=1, out.width='90%', out.height='80%'}
 library(corrplot)
@@ -136,7 +136,7 @@ corrplot(cor_mat,
 )
 ```
 
----
+## Boxplots
 
 ```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='95%', out.height='90%'}
 library(tidyr)
@@ -184,14 +184,14 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   )
 ```
 
-# Checking for multivariate normality
+## Checking for multivariate normality
 
 ::::{.columns}
 
 :::{.column width="35%"}
 - Assumption of multivariate normality not satisfied.
 - Original paper used Box-Cox transformation.
-- Sensitive to outliers.
+  - Sensitive to outliers.
 - Log transformation needed. 
 :::
 
@@ -272,7 +272,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   )
 ```
 
----
+## Re-checking for normality
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 
@@ -305,7 +305,7 @@ qqplot(qchisq(ppoints(nrow(res_log)), df = df_log), d2_res_log,
 abline(0,1,col="#046C9A", lwd = 2)
 ```
 
-# PCA
+## PCA
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
@@ -335,7 +335,7 @@ ggplot(df, aes(x = PC, y = Variance)) +
   )
 ```
 
-# PCA 
+## PCA 
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 library(knitr)
@@ -363,7 +363,7 @@ kable(pca_wide8, format = "html", booktabs = TRUE) %>%
   kable_classic(full_width = FALSE, html_font = "Times New Roman")
 ```
 
-# PCA
+## PCA
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 pc_loadings <- pca_fit$rotation[,1:8]
@@ -387,7 +387,7 @@ kable(pc_loadings_bold, escape = FALSE, format = "html", booktabs = TRUE) %>%
   row_spec(0, bold = TRUE, font_size = 28)
 ```
 
-# PC2 vs. PC1 with outliers
+## PC2 vs. PC1 with outliers
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 
@@ -433,7 +433,7 @@ ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
 
 ```
 
----
+## Factor Analysis
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 library(psych)
@@ -464,14 +464,14 @@ ggplot(data.frame(Factors = 1:5, pvalues = pvalues),
   )
 ```
 
-# Factor Analysis
+## Factor Analysis
 
 ```{r echo=FALSE, include=TRUE, fig.show='hold', warning=FALSE, message=FALSE, fig.width=12, fig.height=8}
 faresult <- factanal(X.log, factors=5)
 print(fa.diagram(faresult$loadings, digits=4))
 ```
 
-# Confusion matrix
+## Confusion matrix
 
 ```{r echo=FALSE, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8, out.width='90%', out.height='80%'}
 library(e1071)
