@@ -301,7 +301,6 @@ Moving on to PCA, we can see (Table 2) that PC1 explains a lot of the variance (
 
 ```{r echo=FALSE}
 
-
 pc_loadings <- pca_fit$rotation[,1:4]
 pc_loadings <- round(pc_loadings, 3)
 
@@ -316,14 +315,30 @@ pc_loadings_bold <- pc_loadings_df %>%
 kable(pc_loadings_bold, escape = FALSE, format = "html", booktabs = TRUE) %>%
 
 ```
+Table 3 displays the influence of individual variables on the four principal components. 
+In PC1, $HCO_3^-$ (0.388), $Na^+$ (0.345), elecCond (0.378), $K^+$ (0.376), 
+and totSolid(0.367) have the highest influence. PC1 strongly correlates with 
+variables relating to major ions and total dissolved content. PC1 measures the 
+overall mineralisation and ionisation levels of the water. Samples with high PC1 
+scores have high mineralisation. In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352),
+and $Na^+$ (-0.301), have the strongest influence. PC2 separates water with high 
+calcium and magnesium (hardness) from waters at higher temperatures. This could 
+mean that there is a difference between hard, cold waters and warmer waters. In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters that have more sulfate are warmer. In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest influence. Waters with higher chlorine levels have less silicone and are warmer.
 
-In PC1, $HCO_3^-$ (0.388), $Na^+$ (0.345), elecCond (0.378), $K^+$ (0.376), and totSolid(0.367) have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. PC1 measures the overall mineralisation and ionisation levels of the water. Samples with high PC1 scores have high mineralisation.
-
-In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352), and $Na^+$ (-0.301), have the strongest influence. PC2 separates water with high calcium and magnesium (hardness) from waters at higher temperatures. This could mean that there is a difference between hard, cold waters and warmer waters.
-
-In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters that have more sulfate are warmer.
-
-In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest influence. Waters with higher chlorine levels have less silicone and are warmer.
+The first two principal components largely align with those found in the study,
+despite the difference between the variables we had access to. In the study, 
+four latent factors were found to explain 74.2% of the variance- 10% less
+than what we achieved with four factors for only the hydrochemical variables.
+The study's first PC was also largely positively influenced by mineralisation,
+and accounted for 37.5% of the variance, whereas ours accounted for 48.4%. 
+PC2 in the study accounted for 13.8%, while our PC2 accounted for 17.9%- in
+both cases, the second PC had high positive loadings on $Mg^{2+}$ and $Ca^{2+}$,
+reflecting on water hardness. The third and fourth principal components diverge
+from the study in our analysis- in the study, PC3 accounts for 10.3% of variance
+and is characterised by gross alpha activity and Ra-226. PC4 accounts for
+12.4% of variation and is also characterised by measures of radioactivity, of 
+radionuclides U-238, Ra-228. Given our lack of radioactivity data, our third and
+fourth PCs are hydrochemical factors.
 
 ## Surprising observations
 
@@ -340,60 +355,106 @@ surprising_sites <- data[outliers, c("waterSource", "tempCels", "elecCond", "tot
 
 knitr::kable(surprising_sites,
              format = "latex",
-             caption = "Table: Water sources with at least one variable > 3 standard deviations from the mean",
+             caption = "Water sources with at least one variable > 3 standard deviations from the mean",
              align = "c",
              digits = 2) %>%
   kable_styling(latex_options = "H", position = "center")
             
 ```
-
 From the standardised $n=30$ observations, five springs are flagged as clear outliers: Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites has at least one measurement more than three standard deviations from the mean. Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate ($3360$ mg/L). Vranjska stands out for its near-boiling temperature ($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels relative to the rest of the dataset. These five cases are the most “surprising” when the dataset is examined variable by variable.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-# Multivariate check: Mahalanobis distances
+# Mahalanobis distances
 mu <- colMeans(X)
 S  <- cov(X)
 d2 <- mahalanobis(X, center = mu, cov = S)
+cut <- qchisq(0.95, df = ncol(X))
+outliers <- d2 > cut
 
-# Flag all sites with distance above the chi-square 99.9% cutoff
-cut <- qchisq(0.999, df = ncol(X))
-which(d2 > cut)
-data[d2 > cut, c("waterSource", "tempCels", "elecCond", "totSolid",
-                 "Na", "Cl", "HCO")]
-
-# PCA on the log-transformed variables (already created earlier)
-pca_result <- prcomp(X_log_matrix, scale. = TRUE)
-
-# Get the scores for the first two PCs
-scores <- as.data.frame(pca_result$x)
-scores$waterSource <- data$waterSource
-scores$geoStruct <- as.factor(data$geoStruct)
-
+# Add to PCA plot data
 pca_plot_data <- data.frame(
-  PC1 = pca_result$x[, 1],
-  PC2 = pca_result$x[, 2],
+  PC1 = pca_fit$x[, 1],
+  PC2 = pca_fit$x[, 2],
   Geological_Group = as.factor(data$geoStruct),
-  Water_Source = data$waterSource 
+  Water_Source = data$waterSource,
+  Outlier = outliers
 )
 
-# PC2 vs PC1
+# Plot
 ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
   geom_point(size = 4, alpha = 0.8) +
+  # Highlight outliers
+  geom_point(data = subset(pca_plot_data, Outlier), 
+             aes(x = PC1, y = PC2), 
+             shape = 21, fill = "yellow", color = "orange", size = 4, stroke = 1.2) +
+  geom_text(data = subset(pca_plot_data, Outlier),
+            aes(label = Water_Source),
+            color = "black",
+  size = 3.5, max.overlaps = 15, box.padding = 0.5, point.padding = 0.2) +
   geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
   geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.5) +
   stat_ellipse(level = 0.95, alpha = 0.7) +  
-  labs(
-    title = "Fig. 7: PC2 vs PC1",
-    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
-    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"),
+  labs(x = paste0("PC1 (", round(summary(pca_fit)$importance[2,1]*100, 1), "%)"),
+    y = paste0("PC2 (", round(summary(pca_fit)$importance[2,2]*100, 1), "%)"),
     color = "Geological\nStructure"
   ) +
   theme_minimal() +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "right")
+
+```
+Plotting the Mahalanobis distance against the first two principle components (Fig. 7)
+gives a multivariate view of the outliers, in terms of their overall chemical
+composition rather than a single variable. Using the Mahalanobis distance with
+a 95% Chi-Squared significance, another five sites were identified as outliers-
+these are the same five as previously identified as having extreme values for
+individual variables, with the exception that Junakovic is no longer an outlier,
+and Bujanovacka has replaced it.
+
+```{r echo = FALSE}
+outlier_table <- data.frame(
+  Water_Source = data$waterSource[outliers],
+  Geological_Group = data$geoStruct[outliers],
+  Mahalanobis_Distance = round(d2[outliers], 2),
+  PC1 = round(pca_fit$x[outliers, 1], 2),
+  PC2 = round(pca_fit$x[outliers, 2], 2)
+)
+
+knitr::kable(
+  outlier_table,
+  caption = "Mahalanobis Outliers with PCA Scores",
+  align = "c")%>%
+  kable_styling(latex_options = "H", position = "center")
 ```
 
-The PCA score plot gives a multivariate view, showing which sites are extreme in terms of their overall chemical profiles rather than a single ion. Along the first principal component (PC1, representing overall mineralisation), Ribarska and Prolom score strongly negative, indicating highly mineralised waters, while Kanjiža lies on the opposite end with a very dilute profile. Along the second principal component (PC2, contrasting hardness with temperature/pH), Vuča sits at the upper extreme with unusually high hardness, whereas Prolom and Ribarska again fall at the lower end, consistent with warmer, more alkaline waters. Thus, while the z-score analysis highlights individual extremes, the PCA identifies different sites as “surprising” because of their distinctive multivariate signatures.
+Along the first PC, Selters, Bujanovacka and Tularska score highly (Table 5). 
+This indicates high mineralisation and ionisation in these samples, and is 
+consistent with our earlier finding of Selters as having high concentrations 
+of chloride, sodium, and bicarbonate and Tulaska with high concentrations of
+sodium and bicarbonate. Veluce also scores highly on concentrations
+of bicarbonate, giving it a relatively high score on PC1 but not as extreme.
+
+Along PC2, Vranskja has a strong negative score. Temperature has a strong 
+negative influence on PC2, and Vranskja stands out among the sites for its
+extremely high temperature (near boiling, 95 $^{\circ}$C). 
+
+
+```{r echo=FALSE}
+# Filter for water source "bujanovacka"
+bujanovacka_data <- subset(data, waterSource == "Bujanovacka", 
+                           select = c("waterSource", "tempCels", "elecCond", 
+                                      "totSolid", "Na", "Cl", "HCO"))
+
+knitr::kable(
+  bujanovacka_data,
+  caption = "Water Quality Variables for Bujanovacka",
+  align = "c"
+) %>%
+  kable_styling(latex_options = "H", position = "center")
+```
+
+The Bujanovacka site's high score in PC1 is explained by its high concentration
+of Bicarbonate (3086 mg/L) and Sodium (2650 mg/L) (Table 6).
 
 ## Factor Analysis
 

@@ -442,24 +442,30 @@ rownames(loadings_df) <- NULL
 knitr::kable(loadings_df, digits = 3, caption = "Serbian Spa Variable Influence on Principal Components", align = "c")
 
 ```
-
-
+Table 3 displays the influence of individual variables on the four principal components. 
 In PC1, $HCO_3^-$ (0.388), $Na^+$ (0.345), elecCond (0.378), $K^+$ (0.376), 
 and totSolid(0.367) have the highest influence. PC1 strongly correlates with 
 variables relating to major ions and total dissolved content. PC1 measures the 
 overall mineralisation and ionisation levels of the water. Samples with high PC1 
-scores have high mineralisation. 
-
-In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352),
+scores have high mineralisation. In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352),
 and $Na^+$ (-0.301), have the strongest influence. PC2 separates water with high 
 calcium and magnesium (hardness) from waters at higher temperatures. This could 
-mean that there is a difference between hard, cold waters and warmer waters.
+mean that there is a difference between hard, cold waters and warmer waters. In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters that have more sulfate are warmer. In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest influence. Waters with higher chlorine levels have less silicone and are warmer.
 
-In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters 
-that have more sulfate are warmer.
-
-In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest 
-influence. Waters with higher chlorine levels have less silicone and are warmer.
+The first two principal components largely align with those found in the study,
+despite the difference between the variables we had access to. In the study, 
+four latent factors were found to explain 74.2% of the variance- 10% less
+than what we achieved with four factors for only the hydrochemical variables.
+The study's first PC was also largely positively influenced by mineralisation,
+and accounted for 37.5% of the variance, whereas ours accounted for 48.4%. 
+PC2 in the study accounted for 13.8%, while our PC2 accounted for 17.9%- in
+both cases, the second PC had high positive loadings on $Mg^{2+}$ and $Ca^{2+}$,
+reflecting on water hardness. The third and fourth principal components diverge
+from the study in our analysis- in the study, PC3 accounts for 10.3% of variance
+and is characterised by gross alpha activity and Ra-226. PC4 accounts for
+12.4% of variation and is also characterised by measures of radioactivity, of 
+radionuclides U-238, Ra-228. Given our lack of radioactivity data, our third and
+fourth PCs are hydrochemical factors.
 
 ## Surprising observations
 
@@ -476,7 +482,7 @@ surprising_sites <- data[outliers, c("waterSource", "tempCels", "elecCond", "tot
 
 knitr::kable(surprising_sites,
              format = "latex",
-             caption = "Table: Water sources with at least one variable > 3 standard deviations from the mean",
+             caption = "Water sources with at least one variable > 3 standard deviations from the mean",
              align = "c",
              digits = 2) %>%
   kable_styling(latex_options = "H", position = "center")
@@ -484,7 +490,7 @@ knitr::kable(surprising_sites,
 ```
 
 From the standardised $n=30$ observations, five springs are flagged as clear 
-outliers: Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites 
+outliers (Table 4): Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites 
 has at least one measurement more than three standard deviations from the mean. 
 Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total 
 dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high 
@@ -495,152 +501,78 @@ relative to the rest of the dataset. These five cases are the most “surprising
 when the dataset is examined variable by variable.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-# Multivariate check: Mahalanobis distances
+# Mahalanobis distances
 mu <- colMeans(X)
 S  <- cov(X)
 d2 <- mahalanobis(X, center = mu, cov = S)
+cut <- qchisq(0.95, df = ncol(X))
+outliers <- d2 > cut
 
-# Flag all sites with distance above the chi-square 99.9% cutoff
-cut <- qchisq(0.999, df = ncol(X))
-which(d2 > cut)
-data[d2 > cut, c("waterSource", "tempCels", "elecCond", "totSolid",
-                 "Na", "Cl", "HCO")]
-
-# PCA on the log-transformed variables (already created earlier)
-pca_result <- prcomp(X_log_matrix, scale. = TRUE)
-
-# Get the scores for the first two PCs
-scores <- as.data.frame(pca_result$x)
-scores$waterSource <- data$waterSource
-scores$geoStruct <- as.factor(data$geoStruct)
-
+# Add to PCA plot data
 pca_plot_data <- data.frame(
-  PC1 = pca_result$x[, 1],
-  PC2 = pca_result$x[, 2],
+  PC1 = pca_fit$x[, 1],
+  PC2 = pca_fit$x[, 2],
   Geological_Group = as.factor(data$geoStruct),
-  Water_Source = data$waterSource 
+  Water_Source = data$waterSource,
+  Outlier = outliers
 )
 
-# PC2 vs PC1
+# Plot
 ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
   geom_point(size = 4, alpha = 0.8) +
+  # Highlight outliers
+  geom_point(data = subset(pca_plot_data, Outlier), 
+             aes(x = PC1, y = PC2), 
+             shape = 21, fill = "yellow", color = "orange", size = 4, stroke = 1.2) +
+  geom_text(data = subset(pca_plot_data, Outlier),
+            aes(label = Water_Source),
+            color = "black",
+  size = 3.5, max.overlaps = 15, box.padding = 0.5, point.padding = 0.2) +
   geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
   geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.5) +
   stat_ellipse(level = 0.95, alpha = 0.7) +  
-  labs(
-    title = "Fig. 8: PC2 vs PC1",
-    x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
-    y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"),
+  labs(x = paste0("PC1 (", round(summary(pca_fit)$importance[2,1]*100, 1), "%)"),
+    y = paste0("PC2 (", round(summary(pca_fit)$importance[2,2]*100, 1), "%)"),
     color = "Geological\nStructure"
   ) +
   theme_minimal() +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "right")
+
 ```
-The PCA score plot gives a multivariate view, showing which sites are extreme 
-in terms of their overall chemical profiles rather than a single ion. Along the 
-first principal component (PC1, representing overall mineralisation), Ribarska 
-and Prolom score strongly negative, indicating highly mineralised waters, while 
-Kanjiža lies on the opposite end with a very dilute profile. Along the second 
-principal component (PC2, contrasting hardness with temperature/pH), Vuča sits 
-at the upper extreme with unusually high hardness, whereas Prolom and Ribarska 
-again fall at the lower end, consistent with warmer, more alkaline waters. Thus, 
-while the z-score analysis highlights individual extremes, the PCA identifies 
-different sites as “surprising” because of their distinctive multivariate 
-signatures.
+Plotting the Mahalanobis distance against the first two principle components (Fig. 7)
+gives a multivariate view of the outliers, in terms of their overall chemical
+composition rather than a single variable. Using the Mahalanobis distance with
+a 95% Chi-Squared significance, another five sites were identified as outliers-
+these are the same five as previously identified as having extreme values for
+individual variables, with the exception that Junakovic is no longer an outlier,
+and Bujanovacka has replaced it.
 
-## Factor Analysis
-
-Factor analysis is a model estimation which deals with the assumptions of 
-underlying causal structure, whereas PCA was a data transformation.
-
-
-```{r echo=FALSE, message=FALSE}
-library(psych)
-X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
-
-pvalues <- rep(0, 5) 
-for(f in 1:5) {
-  res <- try(factanal(X.log, factors = f), silent = TRUE) # get the p-values for each factor
-  if(!inherits(res, "try-error")) {
-    pvalues[f] <- res$PVAL
-  }
-}
-
-ggplot(data.frame(Factors = 1:5, pvalues = pvalues), 
-       aes(x = Factors, y = pvalues)) +
-  geom_point(size = 3) +
-  geom_line() +
-  xlab("Number of Factors") +
-  ylab("p-value") +
-  labs(title = "Fig. 9: Factor Adequacy Test")
-```
-The p-values in this table check the following:
-$H_0:$ k factors are sufficient\
-$H_1:$ More than k factors are needed
-
-Therefore, 5 factors is sufficient as p-value is \> 0.05. 4 or less factors is 
-not sufficient (p-values \< 0.03).
-
-```{r warning=FALSE, message=FALSE, echo=FALSE}
-# Run factor analysis
-faresult <- factanal(X.log, factors = 5)
-
-# Extract SS loadings (sum of squared loadings per factor)
-ss_loadings <- colSums(as.matrix(faresult$loadings)^2)
-
-# Calculate proportions and cumulative proportions
-proportion_var <- ss_loadings / ncol(X.log)
-cumulative_var <- cumsum(proportion_var)
-
-# Combine into a matrix for display
-stats_matrix <- rbind(
-  "SS loadings"    = ss_loadings,
-  "Proportion Var" = proportion_var,
-  "Cumulative Var" = cumulative_var
+```{r echo = FALSE}
+outlier_table <- data.frame(
+  Water_Source = data$waterSource[outliers],
+  Geological_Group = data$geoStruct[outliers],
+  Mahalanobis_Distance = round(d2[outliers], 2),
+  PC1 = round(pca_fit$x[outliers, 1], 2),
+  PC2 = round(pca_fit$x[outliers, 2], 2)
 )
 
-# Round for readability
-stats_matrix <- round(stats_matrix, 3)
-
-# Assign column names like Factor1, Factor2, etc.
-colnames(stats_matrix) <- paste0("Factor", seq_len(ncol(stats_matrix)))
-
-knitr::kable(stats_matrix, "latex", booktabs = TRUE, caption = "Summary Statistics from Factor Analysis (5 Factors)") %>%
-  kable_styling(latex_options = "hold_position")
-
+knitr::kable(
+  outlier_table,
+  caption = "Mahalanobis Outliers with PCA Scores",
+  align = "c")%>%
+  kable_styling(latex_options = "H", position = "center")
 ```
+Along the first PC, Selters, Bujanovacka and Tularska score highly (Table 5). 
+This indicates high mineralisation and ionisation in these samples, and is 
+consistent with our earlier finding of Selters as having high concentrations 
+of chloride, sodium, and bicarbonate and Tulaska with high concentrations of
+sodium and bicarbonate. Veluce also scores highly on concentrations
+of bicarbonate, giving it a relatively high score on PC1 but not as extreme.
 
-Factor 5's loading is small (0.379), and only contributes 3.1% of the overall
-variance. So we will go back to four factors, and visualize the result.
-
-```{r echo=FALSE}
-fa.diagram(faresult$loading[,1:4], digits=4, main = "")
-title(main = "Fig. 10: Factor analysis" )
-```
-
-The red arrows indicate negative variables.
-
--   F1: Total Solid (+), Electrical Conductivity (+), Na (+), HCO (+), K (+), 
-SiO (+).\
--   F2: Mg2 (+), Ca2 (+), pH (-), tempCels (-).\
--   F3: Cl (+).\
--   F4: SO2 (+).
-
-Factor analysis selected 4 factors with 79% variance explained, whereas PCA 
-preferred 4 PCs with 85% variance explained. The factors show that there are 4 
-water types:
-
--   F1: Highly mineralised waters (high soliditity and electrical conductivity)\
--   F2: Magenesium, Calcium (hardness ions), acidic and cool waters\
--   F3: Chloric waters.\
--   F4: Sulfate waters.
-
-Factor analysis is better for model selection since it doesn't include noise 
-like PCA (that's why PCA variance for 4 PCs was greater than FA 4 factors 
-cumulative variance), and maintains parsimony. PCA had to consider all 12 
-Principal Components, whereas FA only had to look at 5 or less factors for 
-determining the underlying structure of spa water composition.
+Along PC2, Vranskja has a strong negative score. Temperature has a strong 
+negative influence on PC2, and Vranskja stands out among the sites for its
+extremely high temperature (near boiling, 95 $^{\circ}$C). 
 
 ## geoStruct Groups
 
@@ -678,6 +610,10 @@ not appropriate for this data. The assumption of equal covariance is clearly
 failed when looking at the distinction in the shape and orientation between each 
 group.
 
+As an alternative, we adopted the Naive Bayes classifier. Unlike LDA, Naive Bayes does not require estimation of full covariance matrices and instead assumes conditional independence of the variables within each class. This makes it more appropriate for datasets with small and unbalanced groups such as ours, where some geostructural categories contained as few as five observations. We fitted the Naive Bayes model to the log-transformed variables and evaluated performance using leave-one-out cross-validation to provide a fair estimate of classification accuracy.
+
+Although we did not have external prior probabilities for the geostructural categories, Naive Bayes estimates them from the observed class frequencies in the sample. This corresponds to assuming that the sample is representative of the population proportions. Alternatively, one could impose equal priors to reflect an uninformative prior belief. In either case, the classification rule remains valid, and our results reflect how well the chemical profiles align with the predefined groups under these assumptions.
+
 ```{r echo=FALSE}
 y  <- factor(data$geoStruct)
 Xl <- scale(as.data.frame(X_log_matrix))
@@ -690,14 +626,6 @@ for(i in 1:n){
 confusionMatrix(table(True=y, Pred=pred))
 
 ```
-
-To assess whether the predefined geostructural groups are verified by the water chemistry data, we began with a formal test of multivariate mean differences. A MANOVA on the log-transformed variables produced a p-value of 0.057, which provides only weak evidence that the group mean vectors differ. This suggests that while some differences exist, they are not pronounced enough to be considered statistically significant at conventional levels.
-
-After testing the assumptions of Linear Discriminant Analysis (LDA), it became clear that the method was not suitable for this dataset. The group covariance ellipses displayed different shapes and orientations, which indicated that the groups did not share a common covariance structure. Since LDA requires equal covariance matrices across classes, this assumption was violated and the method could not be applied reliably.
-
-As an alternative, we adopted the Naive Bayes classifier. Unlike LDA, Naive Bayes does not require estimation of full covariance matrices and instead assumes conditional independence of the variables within each class. This makes it more appropriate for datasets with small and unbalanced groups such as ours, where some geostructural categories contained as few as five observations. We fitted the Naive Bayes model to the log-transformed variables and evaluated performance using leave-one-out cross-validation to provide a fair estimate of classification accuracy.
-
-Although we did not have external prior probabilities for the geostructural categories, Naive Bayes estimates them from the observed class frequencies in the sample. This corresponds to assuming that the sample is representative of the population proportions. Alternatively, one could impose equal priors to reflect an uninformative prior belief. In either case, the classification rule remains valid, and our results reflect how well the chemical profiles align with the predefined groups under these assumptions.
 
 The model achieved an overall accuracy of 50 percent, which is higher than the no-information rate of 40 percent but still modest. The Kappa statistic of 0.29 suggests only fair agreement between the predicted and true classes. The classification performance varied across groups. Karstic terrains (Class 2) and Metamorphic regions (Class 4) were the best recognised categories, with balanced accuracies of 0.81 and 0.74 respectively, indicating that their chemical profiles are relatively distinctive. Hydrological Basins (Class 1), on the other hand, were poorly distinguished and often misclassified as Volcanogen Massifs (Class 3). Volcanogen Massifs themselves, despite being the largest group, were only moderately well classified, with a balanced accuracy of 0.53.
 
