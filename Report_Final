@@ -531,9 +531,14 @@ of Bicarbonate (3086 mg/L) and Sodium (2650 mg/L) (Table 6).
 
 ## Factor Analysis
 
-Factor analysis is a model estimation which deals with the assumptions of 
-underlying causal structure, whereas PCA was a data transformation.
+Factor analysis is a model estimation which deals with the assumptions of underlying causal structure, whereas PCA is a data transformation.
 
+Assumptions:
+- Covariation in the observed variables is due to the presence of one or more factors (latent variables) that exert causal influence on these observed variables.
+
+PCA does not make such assumptions but both PCA and FA do not have a dependent variable to be explained by independent variables.
+
+Hypotheses: There are unobserved variables that explain the observations.
 
 ```{r echo=FALSE, message=FALSE}
 library(psych)
@@ -563,27 +568,19 @@ Therefore, 5 factors is sufficient as p-value is \> 0.05. 4 or less factors is
 not sufficient (p-values \< 0.03).
 
 ```{r warning=FALSE, message=FALSE, echo=FALSE}
-# Run factor analysis
 faresult <- factanal(X.log, factors = 5)
-
-# Extract SS loadings (sum of squared loadings per factor)
 ss_loadings <- colSums(as.matrix(faresult$loadings)^2)
-
-# Calculate proportions and cumulative proportions
 proportion_var <- ss_loadings / ncol(X.log)
 cumulative_var <- cumsum(proportion_var)
 
-# Combine into a matrix for display
 stats_matrix <- rbind(
   "SS loadings"    = ss_loadings,
   "Proportion Var" = proportion_var,
   "Cumulative Var" = cumulative_var
 )
 
-# Round for readability
 stats_matrix <- round(stats_matrix, 3)
 
-# Assign column names like Factor1, Factor2, etc.
 colnames(stats_matrix) <- paste0("Factor", seq_len(ncol(stats_matrix)))
 
 knitr::kable(stats_matrix, "latex", booktabs = TRUE, caption = "Summary Statistics from Factor Analysis (5 Factors)") %>%
@@ -595,13 +592,8 @@ We can see from Table 7 that Factor 5's loading is small (0.379), and only contr
 variance. So we will go back to four factors, and visualize the result.
 
 ```{r echo=FALSE, fig.width=11.5, fig.align='center'}
-# Set wider margins to avoid clipping (bottom, left, top, right)
-par(mar = c(5, 9, 4, 2))  # Increase left margin
-
-# Plot factor diagram
+par(mar = c(5, 9, 4, 2))  
 fa.diagram(faresult$loading[, 1:4], digits = 4, main = "")
-
-# Add title
 title(main = "Fig. 9: Factor analysis")
 ```
 
@@ -613,20 +605,14 @@ SiO (+ 0.63).\
 -   F3: Cl (+ 0.93).\
 -   F4: SO2 (+ 0.99).
 
-Factor analysis selected 4 factors with 79% variance explained (Table 7), whereas PCA 
-preferred 4 PCs with 85% variance explained. The factors show that there are 4 
-water types:
+The factors show that there are 4 water types:
 
 -   F1: Highly mineralised waters (high soliditity and electrical conductivity)\
 -   F2: Magenesium, Calcium (hardness ions), acidic and cool waters\
 -   F3: Chloric waters.\
 -   F4: Sulfate waters.
 
-Factor analysis is better for model selection since it doesn't include noise 
-like PCA (that's why PCA variance for 4 PCs was greater than FA 4 factors 
-cumulative variance), and maintains parsimony. PCA had to consider all 12 
-Principal Components, whereas FA only had to look at 5 or less factors for 
-determining the underlying structure of spa water composition.
+Factor analysis gives us cleaner results because it filters out noise that PCA includes. While PCA captured 85% variance and FA 79%(Table 7), that 'missing' 6% was noise. This means FA reveals the true underlying patterns, giving us more interpretable factors while improving model quality and maintaining parsimony. Furthermore, PCA had to consider all 12 Principal Components, whereas FA only had to look at 5 or less factors for determining the underlying structure of spa water composition.
 
 ## geoStruct Groups
 
