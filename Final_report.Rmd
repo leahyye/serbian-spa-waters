@@ -25,8 +25,23 @@ library(MASS)
 
 # **Introduction**
 
-This study analyzed hydrochemical data for mineral and thermal waters in Serbian territory. The authors used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their\
-geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability among the observations. Two of these four PCs are based on measures of mineralisation of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity. The results of PCA achieved a total correct classification of 83.3% for predefined geotectonic units, and the dendrogram of HCA classified the samples into four major groups and eleven subgroups.
+Our report is based on the data collected by a 2012 study from Volume 112 of the 
+Journal of Geochemical Exploration. The study, titled 'Multivariate statistical 
+analysis of hydrochemical and radiological data of Serbian spa waters',
+analyzed samples of mineral and thermal waters in Serbian territory. The 
+diversity of the composition of these waters reflects on the geological and 
+geographical diversity of the Serbian territory on which they are located. The 
+authors used principal component analysis (PCA) and hierarchical cluster 
+analysis (HCA) to characterize the chemical composition and natural 
+radioactivity of these water samples, understand the relationships between the 
+variables measured, and classify the waters with respect to their geotectonic 
+units. PCA revealed four latent factors that accounted for 74.2% of 
+the variability among the observations. Two of these four PCs are based on 
+measures of mineralisation of the components of the host rock, and the other 
+two are based on variables that are indicative of natural radioactivity. The 
+results of PCA achieved a total correct classification of 83.3% for predefined 
+geotectonic units, and the dendrogram of HCA classified the samples into four 
+major groups and eleven subgroups.
 
 # **Methodology**
 
@@ -47,6 +62,13 @@ The Serbian Spa Waters Dataset contains 30 observations(sites), with 15 columns:
 -   HCO: Numerical - Bicarbonate (mg/L);\
 -   Si0: Numerical - Silica, dissolved silicon dioxide (mg/L);\
 -   geoStruct: Integer - The geological structure the water was collected from (1 = Hydrological Basin, 2 = Karstic terrains, 3 = Volcanogen Massifs, 4 = Metamorphic Regions).
+
+Our data has 12 numeric values, whereas the original study had 18- the data
+available to us only contained the hydrochemical parameters, but the study's 
+analysis also included data on natural radionuclides and gross alpha and 
+gross beta activities. These measurements of radioactivity are not available
+to the public, so our analysis deals with the hydrochemical properties
+of the samples.
 
 Ions $\mathrm{(HCO_3^-, Ca^{2+}, Mg^{2+}, Na^+, K^+, Cl^-, SO_4^{2-}, SiO_2)}$ were analysed in the laboratories of the Institute of Public Health of Serbia. Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$. Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption spectrophotometry.
 
