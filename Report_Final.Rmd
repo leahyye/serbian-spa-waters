@@ -5,6 +5,7 @@ author: "Leah Ye (300651931), Harry Philpott (300667756),
 
 Claude Butler (300651409), Elizabeth Myers (300641471)"
 output: bookdown::pdf_document2
+bibliography: STAT394_references.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -26,7 +27,7 @@ library(MASS)
 
 # **Introduction**
 
-This study analyzed hydrochemical data for mineral and thermal waters in Serbian territory. The authors used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability among the observations. Two of these four PCs are based on measures of mineralisation of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity. The results of PCA achieved a total correct classification of 83.3% for predefined geotectonic units, and the dendrogram of HCA classified the samples into four major groups and eleven subgroups.
+This project is based on an article by [-@TANASKOVIC2012226], in which the authors analyzed hydrochemical data for mineral and thermal waters in Serbian territory. They used principal component analysis (PCA) and hierarchical cluster analysis (HCA) to characterize the chemical composition and natural radioactivity of these water samples, understand the relationships between the variables measured, and classify the waters with respect to their geotectonic units. PCA revealed four latent factors that accounted for 74.2% of the variability among the observations. Two of these four PCs are based on measures of mineralisation of the components of the host rock, and the other two are based on variables that are indicative of natural radioactivity. The results of PCA achieved a total correct classification of 83.3% for predefined geotectonic units, and the dendrogram of HCA classified the samples into four major groups and eleven subgroups.
 
 # **Methodology**
 
