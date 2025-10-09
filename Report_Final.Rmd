@@ -628,6 +628,29 @@ The model achieved an overall accuracy of 50 percent, which is higher than the n
 
 These results suggest that the groups, the geostructural categories, are only partially verified by the data. Some groups do exhibit clear multivariate chemical signatures, allowing them to be separated reasonably well, while others show substantial overlap that prevents reliable classification. In particular, the difficulty in separating Hydrological Basins from Volcanogen Massifs implies that the water chemistry of these groups is not sufficiently distinct. Overall, the analysis provides evidence that geological structure does influence chemical composition, but the effect is not strong enough across all groups for the classification to be considered fully verified. The geostructural groupings are therefore only partially confirmed by the data.
 
+# **Conclusion**
+
+Despite working with a reduced dataset compared to the initial study, we managed
+to replicate some of the analysis of the study. Applying PCA to the data
+found that four PCs was sufficient for the data, and the first two PCs, 
+accounting for 70% of the variance, were characterised by the same variables as 
+the study's PCs (PC1 by mineralisation and PC2 by water hardness). To improve on 
+the parsimony of these results, we applied factor analysis to the data and found
+that four factors provided a simpler and more accurate model while still working
+with the same characteristic variable combinations (mineralisation, water hardness,
+chloric waters, and sulfate waters). These for factors accounted for 79% of the
+variance, which is comparable with the PCA results and preferable for its 
+simpler modelling.
+
+Our analysis also attempted to verify the geostructural groups used in the 
+study. The unbalanced nature of the data made these groups difficult to 
+verify using LDA, so we used the Naive Bayes classifier, finding only a partial
+confirmation of the groups by the data, with a model accuracy of 50%, although
+for this was higher for Karstic Terrains and Metamorphic Regions, which have
+the most distinctive chemical profiles. Hydrological Basins and Volgagenic 
+Massifs were difficult to accurately classify separately, indicating that
+they are not distinguishable by unique chemical profiles.
+
 
 
 
