@@ -92,7 +92,28 @@ Titration methods were applied to measure alkalinity of $Ca^{2+}$ and $Mg^{2+}$.
 Concentrations of $Na^+$ and $K^+$ were determined by atomic absorption 
 spectrophotometry.
 
-Six radiological variables from the original paper were not publicly available. This unfortunate omission does affect comparisons with those results, as we can not be sure what differences are due to our methodology and which are due to the reduced set of variables.
+Six radiological variables from the original paper were not publicly available. This unfortunate omission does affect comparisons with those results, as we can not be sure what differences are due to our methodology and which are due to the reduced set of variables. The details of the missing variables are listed in Table \@ref(tab:isotopeTable).
+
+```{r, echo=FALSE, results='asis'}
+isotopes <- data.frame(
+  Variable = c("GA", "GB", "$^{238}$U", "$^{228}$R", "$^{226}$R", "$^{40}$K"),
+  Description = c("Gross alpha activities", "Gross beta activities", 
+                  "Uranium isotope", "Radium isotope", "Radium isotope", "Potassium isotope"),
+  Units = c("mBq/L", "", "", "", "", ""),
+  stringsAsFactors = FALSE
+)
+
+kable(isotopes,
+      caption = "Radioactive Isotopes Measured in Serbian Spa Waters \\label{tab:isotopeTable}",
+      align = c("c", "l", "c"),
+      booktabs = TRUE,
+      escape = FALSE) %>%
+  kable_styling(latex_options = c("HOLD_position"), full_width = FALSE) %>%
+  row_spec(0, bold = TRUE, extra_css = "font-family: serif;") %>%
+  row_spec(1:nrow(isotopes), extra_css = "font-family: serif; line-height: 1.2;") %>%
+  column_spec(1:ncol(isotopes), extra_css = "font-family: serif;")
+```
+
 
 Where Hyodrological Basins and Karstic terrains have 5 observations each, 
 Volcanogen Massifs has 14 observations, and Metamorphic Regions has 6 
