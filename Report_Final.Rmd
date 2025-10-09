@@ -240,15 +240,12 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
     legend.position = "none"
   )
 ```
-Variables were standardised to z-scores to allow direct comparison despite 
-differing measurement units. The boxplots In figure \@ref(fig:boxplots) show that some features 
-(e.g. $\mathrm{Na^+}$, $\mathrm{Cl^-}$, $\mathrm{HCO_3^-}$) have greater 
-variability and distinct outliers, while others remain tightly clustered around 
+Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots In figure \@ref(fig:boxplots) show that some features (e.g. $\mathrm{Na^+}$, $\mathrm{Cl^-}$, $\mathrm{HCO_3^-}$) have greater variability and distinct outliers, while others remain tightly clustered around 
 the mean. This highlights which chemical measures are most heterogeneous across 
 the spa waters. However, all variables in the boxplot have a non-symmetrical 
 shape and contain outliers, indicating that a log transformation is necessary.
 
-```{r multivariate normal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+```{r multivariateNormal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Fit MANOVA model using geoStruct as grouping
 fit <- manova(as.matrix(X) ~ data$geoStruct)
 # Extract residuals
@@ -275,7 +272,7 @@ qqplot(qchisq(ppoints(nrow(res)), df = df), d2_res,
 abline(0,1,col="#046C9A", lwd = 2)
 ```
 
-The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of  quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. This means the assumption of multivariate normality is not fully satisfied.
+The QQ-plot of MANOVA residual Mahalanobis distances in Figure \@ref(fig:multivariateNormal) against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of  quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. This means the assumption of multivariate normality is not fully satisfied.
 
 ```{r, echo=FALSE}
 # Log transforming numeric variables and adding them into dataset as new columns
@@ -294,9 +291,9 @@ data$log.SiO <- log(data$SiO)
 ```
 
 After performing a log transformation of the variables, we recheck the 
-univariate and multivariate normality of the data.
+univariate and multivariate normality of the data. First we can inspect the boxplots in Figure \@ref(fig:boxplotsLogTransformed) to begin. 
 
-```{r echo=FALSE, warning=FALSE, message = FALSE}
+```{r boxplotsLogTransformed, echo=FALSE, warning=FALSE, message = FALSE}
 X.log <- data[, 16:27]                    # all log transformed numerical variables
 X.log <- as.data.frame(scale(X.log))         # z-scores per variable
 X.log$.row <- 1:nrow(X.log)
@@ -309,20 +306,27 @@ box_long <- pivot_longer(
 )
 
 # not z-scored
-ggplot(box_long, aes(x = variable, y = value)) +
+ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
   coord_flip() +
+  scale_fill_manual(values = colors) + 
   labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Fig.3: Boxplots of log transformed Serbian spa water variables (z-scored)") +
-  theme(panel.grid.minor = element_blank())
+       title = "Boxplots of Log-Transformed Z-Scored Variables") +
+  theme_minimal(base_family = "Times New Roman") + 
+  theme(
+    panel.grid.major = element_line(color = "grey80", size = 0.3),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(face = "bold", size = 16),
+    axis.text = element_text(size = 12),
+    legend.position = "none")
 ```
 
 The boxplots are far more symmetric than with the untransformed data, showing
 more conformity with the normal distribution. However, we can clearly see the
-presence of outliers, particularly with the variable $\mathrm{Mg^{2+}}$, with
-four observations at least 2 standard deviations below the mean.
+presence of outliers, particularly with the variable $\mathrm{Mg^{2+}}$ which has
+four observations at least two standard deviations below the mean.
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE, message = FALSE}
 X_log_matrix <- as.matrix(X.log[,-which(names(X.log) == ".row")]) # Remove the .row column for analysis
 
 # Fit MANOVA model
