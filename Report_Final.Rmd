@@ -259,26 +259,23 @@ S_res  <- cov(res)
 d2_res <- mahalanobis(res, center = mu_res, cov = S_res)
 
 # Degrees of freedom = number of variables
-p <- ncol(res)
+df <- ncol(res)
 
 # QQ-plot
-qqplot(qchisq(ppoints(nrow(res)), df = p), d2_res,
-       main = "Fig. 2: QQ-plot of Serbian spa water MANOVA residuals",
+par(family = "serif",
+    cex.main = 2,
+    cex.lab = 2,
+    cex.axis = 1.8,
+    mar = c(5, 6, 4, 2))
+
+qqplot(qchisq(ppoints(nrow(res)), df = df), d2_res,
+       main = "QQ-plot of MANOVA residuals",
        xlab = expression(paste(chi^2, " quantiles")),
        ylab = expression(paste("Ordered residual ", d[M]^2)))
-abline(0,1,col="steelblue4")
+abline(0,1,col="#046C9A", lwd = 2)
 ```
 
-The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical 
-$\chi^2$ distribution provides a diagnostic for assessing multivariate 
-normality. If the residuals were perfectly normal, the points would lie close to 
-the 45° line. In this case, the points deviate fairly evenly across the range of 
-quantiles, rather than only at one end, indicating that the residuals are not an 
-exact match to the multivariate Gaussian model. The upper tail in particular 
-shows noticeable departures, with the largest residuals exceeding the expected 
-$\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the 
-presence of outliers. This means the assumption of multivariate normality is not 
-fully satisfied.
+The QQ-plot of MANOVA residual Mahalanobis distances against the theoretical $\chi^2$ distribution provides a diagnostic for assessing multivariate normality. If the residuals were perfectly normal, the points would lie close to the 45° line. In this case, the points deviate fairly evenly across the range of  quantiles, rather than only at one end, indicating that the residuals are not an exact match to the multivariate Gaussian model. The upper tail in particular shows noticeable departures, with the largest residuals exceeding the expected $\chi^2$ quantiles, which indicates potential heavy-tailed behaviour or the presence of outliers. This means the assumption of multivariate normality is not fully satisfied.
 
 ```{r, echo=FALSE}
 # Log transforming numeric variables and adding them into dataset as new columns
