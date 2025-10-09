@@ -618,7 +618,7 @@ determining the underlying structure of spa water composition.
 
 ## geoStruct Groups
 
-```{r}
+```{r echo=FALSE}
 # Check p value
 summary(fit_log, test = "Hotelling-Lawley")
 ```
@@ -629,7 +629,7 @@ provides only weak evidence that the group mean vectors differ. This suggests
 that while some differences exist, they are not pronounced enough to be 
 considered statistically significant at conventional levels.
 
-```{r}
+```{r  echo=FALSE}
 lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
 lda_fit <- lda(geoStruct ~ ., data = lda_data)
 lda_scores <- predict(lda_fit)$x
@@ -652,7 +652,7 @@ not appropriate for this data. The assumption of equal covariance is clearly
 failed when looking at the distinction in the shape and orientation between each 
 group.
 
-```{r}
+```{r echo=FALSE}
 library(e1071)
 library(caret)
 y  <- factor(data$geoStruct)
@@ -667,7 +667,17 @@ confusionMatrix(table(True=y, Pred=pred))
 
 ```
 
+To assess whether the predefined geostructural groups are verified by the water chemistry data, we began with a formal test of multivariate mean differences. A MANOVA on the log-transformed variables produced a p-value of 0.057, which provides only weak evidence that the group mean vectors differ. This suggests that while some differences exist, they are not pronounced enough to be considered statistically significant at conventional levels.
 
+After testing the assumptions of Linear Discriminant Analysis (LDA), it became clear that the method was not suitable for this dataset. The group covariance ellipses displayed different shapes and orientations, which indicated that the groups did not share a common covariance structure. Since LDA requires equal covariance matrices across classes, this assumption was violated and the method could not be applied reliably.
+
+As an alternative, we adopted the Naive Bayes classifier. Unlike LDA, Naive Bayes does not require estimation of full covariance matrices and instead assumes conditional independence of the variables within each class. This makes it more appropriate for datasets with small and unbalanced groups such as ours, where some geostructural categories contained as few as five observations. We fitted the Naive Bayes model to the log-transformed variables and evaluated performance using leave-one-out cross-validation to provide a fair estimate of classification accuracy.
+
+Although we did not have external prior probabilities for the geostructural categories, Naive Bayes estimates them from the observed class frequencies in the sample. This corresponds to assuming that the sample is representative of the population proportions. Alternatively, one could impose equal priors to reflect an uninformative prior belief. In either case, the classification rule remains valid, and our results reflect how well the chemical profiles align with the predefined groups under these assumptions.
+
+The model achieved an overall accuracy of 50 percent, which is higher than the no-information rate of 40 percent but still modest. The Kappa statistic of 0.29 suggests only fair agreement between the predicted and true classes. The classification performance varied across groups. Karstic terrains (Class 2) and Metamorphic regions (Class 4) were the best recognised categories, with balanced accuracies of 0.81 and 0.74 respectively, indicating that their chemical profiles are relatively distinctive. Hydrological Basins (Class 1), on the other hand, were poorly distinguished and often misclassified as Volcanogen Massifs (Class 3). Volcanogen Massifs themselves, despite being the largest group, were only moderately well classified, with a balanced accuracy of 0.53.
+
+These results suggest that the groups, the geostructural categories, are only partially verified by the data. Some groups do exhibit clear multivariate chemical signatures, allowing them to be separated reasonably well, while others show substantial overlap that prevents reliable classification. In particular, the difficulty in separating Hydrological Basins from Volcanogen Massifs implies that the water chemistry of these groups is not sufficiently distinct. Overall, the analysis provides evidence that geological structure does influence chemical composition, but the effect is not strong enough across all groups for the classification to be considered fully verified. The geostructural groupings are therefore only partially confirmed by the data.
 
 
 
