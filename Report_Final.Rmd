@@ -199,7 +199,7 @@ variability and pervasive right-skewness. The chemical composition of the water
 samples is largely dominated by bicarbonate, with sodium and chloride also 
 reaching very high values for some samples.
 
-```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+```{r corrplot, fig.cap="Correlation matrix of Serbian spa water variables", include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 par(family = "Times")
 cor_mat <- cor(numeric_cols, use = "pairwise.complete.obs", method = "pearson")
 corrplot(cor_mat,
@@ -216,10 +216,9 @@ corrplot(cor_mat,
 ``` 
 
 The correlation plot in Figure \@ref(fig:corrplot) reveals a few very highly correlated pairs of variables. Electrical conductivity, total solids, sodium, potassium, and chloride form a strongly correlated cluster, with Pearson's Correlation Coefficients from 0.37 to 0.96.  This indicates that they vary together across spa waters. Electrical conductivity in particular is directly related to the total dissolved solids in water, as more salts and minerals in the water increases the amount of ions, which in turn increase electrical conductivity.   
-In contrast, pH shows moderate negative correlations with several ions (e.g., C$\mathrm{Ca^{2+}}$, $\mathrm{Mg^{2+}}$, $\mathrm{HCO_3^-}$), suggesting 
-different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
+In contrast, pH shows moderate negative correlations with several ions (e.g., C$\mathrm{Ca^{2+}}$, $\mathrm{Mg^{2+}}$, $\mathrm{HCO_3^-}$), suggesting  different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
 
-```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
+```{r boxplots, fig.cap="Boxplots of Z-Scored Variables", echo=FALSE, fig.height=6, fig.width=6, message=FALSE, warning=FALSE, dpi=100, include=TRUE}
 # Select numeric features for scaling 
 X <- data[, 3:14]                    #all numerical categories
 X <- as.data.frame(scale(X))         # z-scores per variable
@@ -247,9 +246,8 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   coord_flip() +
   scale_fill_manual(values = colors) + 
   labs(x = NULL, 
-       y = "Scaled value (z-score)",
-       title = "Boxplots of Z-Scored Variables") +
-  theme_minimal(base_family = "Times New Roman") + 
+       y = "Scaled value (z-score)") +
+  theme_minimal(base_family = "Times") + 
   theme(
     plot.title = element_text(face = "bold", size = 22),  
     axis.title = element_text(size = 20),                  
@@ -261,12 +259,9 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   )
 ```
 
-Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots In figure \@ref(fig:boxplots) show that some features (e.g. $\mathrm{Na^+}$, $\mathrm{Cl^-}$, $\mathrm{HCO_3^-}$) have greater variability and distinct outliers, while others remain tightly clustered around 
-the mean. This highlights which chemical measures are most heterogeneous across 
-the spa waters. However, all variables in the boxplot have a non-symmetrical 
-shape and contain outliers, indicating that a log transformation is necessary.
+Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots in Figure \@ref(fig:boxplots) show that some features (e.g. $\mathrm{Na^+}$, $\mathrm{Cl^-}$, $\mathrm{HCO_3^-}$) have greater variability and distinct outliers, while others remain tightly clustered around the mean. This highlights which chemical measures are most heterogeneous across the spa waters. However, all variables in the boxplot have a non-symmetrical shape and contain outliers, indicating that a log transformation is necessary.
 
-```{r multivariateNormal, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+```{r multivariateNormal, fig.cap="QQ-plot of MANOVA residuals", include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
 # Fit MANOVA model using geoStruct as grouping
 fit <- manova(as.matrix(X) ~ data$geoStruct)
 # Extract residuals
@@ -287,7 +282,6 @@ par(family = "serif",
     mar = c(5, 6, 4, 2))
 
 qqplot(qchisq(ppoints(nrow(res)), df = df), d2_res,
-       main = "QQ-plot of MANOVA residuals",
        xlab = expression(paste(chi^2, " quantiles")),
        ylab = expression(paste("Ordered residual ", d[M]^2)))
 abline(0,1,col="#046C9A", lwd = 2)
@@ -313,7 +307,7 @@ data$log.SiO <- log(data$SiO)
 
 After performing a log transformation of the variables, we recheck the univariate and multivariate normality of the data. First we can inspect the boxplots in Figure \@ref(fig:boxplotsLogTransformed) to begin. 
 
-```{r boxplotsLogTransformed, echo=FALSE, warning=FALSE, message = FALSE}
+```{r boxplotsLogTransformed, fig.cap="Boxplots of Log-Transformed Z-Scored Variables", echo=FALSE, warning=FALSE, message = FALSE}
 X.log <- data[, 16:27]                    # all log transformed numerical variables
 X.log <- as.data.frame(scale(X.log))         # z-scores per variable
 X.log$.row <- 1:nrow(X.log)
@@ -330,9 +324,8 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
   geom_boxplot(notch = TRUE, outlier.alpha = 0.6, na.rm = TRUE) +
   coord_flip() +
   scale_fill_manual(values = colors) + 
-  labs(x = NULL, y = "Scaled value (z-score)",
-       title = "Boxplots of Log-Transformed Z-Scored Variables") +
-  theme_minimal(base_family = "Times New Roman") + 
+  labs(x = NULL, y = "Scaled value (z-score)") +
+  theme_minimal(base_family = "Times") + 
   theme(
     panel.grid.major = element_line(color = "grey80", size = 0.3),
     panel.grid.minor = element_blank(),
@@ -343,7 +336,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
 
 The boxplots are far more symmetric than with the untransformed data, showing more conformity with the normal distribution. However, we can clearly see the presence of outliers, particularly with the variable $\mathrm{Mg^{2+}}$ which has four observations at least two standard deviations below the mean.
 
-```{r QQplotLogTransorm, echo=FALSE, warning=FALSE, message = FALSE}
+```{r QQplotLogTransorm, fig.cap="QQ-plot of MANOVA (Log-Transformed) Residuals", echo=FALSE, warning=FALSE, message = FALSE}
 X_log_matrix <- as.matrix(X.log[, !names(X.log) %in% ".row"])
 
 # Fit MANOVA model
@@ -367,7 +360,6 @@ par(family = "serif",
     mar = c(5, 6, 4, 2))
 
 qqplot(qchisq(ppoints(nrow(res_log)), df = df_log), d2_res_log,
-       main = "QQ-plot of MANOVA (Log-Transformed) Residuals",
        xlab = expression(paste(chi^2, " quantiles")),
        ylab = expression(paste("Ordered residual ", d[M]^2)))
 abline(0,1,col="#046C9A", lwd = 2)
