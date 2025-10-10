@@ -663,7 +663,6 @@ manova_df[, num_cols] <- round(manova_df[, num_cols], 3)
 # Create a nice LaTeX table
 knitr::kable(manova_df,
              caption = "MANOVA Test of Geological Structure Groups \\label{tab:groupsManova}",
-             align = "c",
              booktabs = TRUE) %>%
   kable_styling(latex_options = c("HOLD_position"), full_width = FALSE) %>%
   row_spec(0, bold = TRUE)
@@ -840,4 +839,4 @@ the most distinctive chemical profiles. Hydrological Basins and Volgagenic
 Massifs were difficult to accurately classify separately, indicating that
 they are not distinguishable by unique chemical profiles.
 
-## References
+# References
