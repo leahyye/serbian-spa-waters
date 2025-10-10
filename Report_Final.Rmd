@@ -167,7 +167,7 @@ kable(summary_formatted,
   column_spec(1:ncol(summary_formatted), extra_css = "font-family: serif;")
 ```
 
-This dataset is characterized by high variability. This is likely due to the 
+This dataset is characterized by high variability (Table 4). This is likely due to the 
 different water sources. pH is more consistent, ranging from neutral (6.5) to 
 slightly basic (9.0), which are fairly typical values for water in nature. The 
 range of temperatures recorded in this dataset is from 14.40 to 95.00 degrees 
@@ -425,7 +425,7 @@ kable(pca_df, format = "latex", booktabs = TRUE, align = "r",
   column_spec(1:ncol(pca_df), extra_css = "font-family: serif;") 
 ```
 
-```{r PCA-loadings-table, fig.cap="Serbian Spa Variable Influence on Principal Components", echo=FALSE, message=FALSE, warning=FALSE}
+```{r fig.cap="Serbian Spa Variable Influence on Principal Components", echo=FALSE, message=FALSE, warning=FALSE}
 # Prepare loadings
 loadings <- pca_fit$rotation
 loadings_df <- as.data.frame(loadings)
@@ -435,7 +435,7 @@ rownames(loadings_df) <- NULL
 
 # Create table
 kable(loadings_df, format = "latex", digits = 3, align = "r",
-      caption = "Serbian Spa Variable Influence on Principal Components") %>%
+      caption = "Serbian Spa Variable Influence on Principal Components \\label{PCA-loadings-table") %>%
   kable_styling(latex_options = c("HOLD_position"), full_width = FALSE) %>%
   column_spec(1, bold = TRUE) %>%                         # Bold variable names
   row_spec(0, bold = TRUE, extra_css = "font-family: serif;") %>% 
