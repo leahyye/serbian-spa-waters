@@ -369,83 +369,82 @@ The QQ-plot of MANOVA residual Mahalanobis distances in Figure \@ref(fig:corrplo
 
 ## PCA
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, PC-Elbow-Plot}
+Moving on to PCA, we can see in Table \@ref(tab:PCA-summary-table) that PC1 explains a lot of the variance (around half, 48.41%). PC2 explains about a further fifth (17.94%). PC3 and PC4 explain a further 10.83% and 7.79% respectively, and these 4 PCs cumulatively account for 84.97% of the overall variance. From PC5 and onwards, each PC explains less than 7% of the extra variance. The elbow plot in Figure \@ref(fig:screeplot) displays this flattening as the effect of each PC becomes smaller and smaller. Based on this plot, using 4 Principal Components will be sufficient in the model.
 
+```{r screeplot, fig.cap="PCA Elbow Plot", echo=FALSE, warning=FALSE, message=FALSE}
 pca_fit <- prcomp(X_log_matrix, center=TRUE, scale. = TRUE) # apply pca on relevant explanatory numerical columns 
 
-par(mar = c(5, 4, 4, 2) + 0.1)
+# variance explained
+var_explained <- pca_fit$sdev^2 / sum(pca_fit$sdev^2)
 
-# Plot PCA scree plot
-plot(pca_fit, type = "l", main = "Fig. 7: PCA elbow plot for Serbian spa data")
+# data frame for ggplot
+df <- data.frame(
+  PC = seq_along(var_explained),
+  Variance = var_explained
+)
 
+ggplot(df, aes(x = PC, y = Variance)) +
+  geom_line(color = "#046C9A", linewidth = 1) +
+  geom_point(size = 3, color = "#046C9A") +
+  labs(
+    title = "Scree Plot",
+    x = "Principal Component",
+    y = "Proportion of Variance Explained"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14)
+  )
 ```
-```{r PCA-summary-table, echo=FALSE, message=FALSE, warning=FALSE}
-# Perform PCA
-pca_fit <- prcomp(X_log_matrix, center = TRUE, scale. = TRUE)
 
+```{r PCA-summary-table, fig.cap="Summary of Principal Components", echo=FALSE, message=FALSE, warning=FALSE}
 # Extract summary and convert to data frame
 pca_summary <- summary(pca_fit)$importance
 pca_df <- as.data.frame(round(pca_summary, 4))  # Round for readability
 pca_df <- t(pca_df)  # Transpose so PCs are rows
 
-# Create clean table
-kable(pca_df, caption =  "Summary of Principal Components", align = "c", format = "latex",
-      booktabs = TRUE,
-      longtable = FALSE) %>%
-  kable_styling(latex_options = c("H"), full_width = FALSE, position = "center") %>%
-kable_styling(full_width = FALSE, position = "center") %>%
-row_spec(0, extra_css = "font-family: serif;") %>%
-row_spec(1:nrow(pca_df), extra_css = "font-family: serif;") %>%
-column_spec(1:ncol(pca_df), extra_css = "font-family: serif;") 
+# Convert row names to a column so we can bold selectively
+pca_df <- as.data.frame(pca_df)
+pca_df$PC <- rownames(pca_df)
+rownames(pca_df) <- NULL
+pca_df <- pca_df[, c(ncol(pca_df), 1:(ncol(pca_df)-1))]  # PC as first column
 
+# Create LaTeX table with decimal alignment
+kable(pca_df, format = "latex", booktabs = TRUE, align = "r", 
+      caption = "Summary of Principal Components") %>%
+  kable_styling(latex_options = c("HOLD_position"), full_width = FALSE) %>%
+  column_spec(1, bold = TRUE) %>%               # Bold first column (PC names)
+  column_spec(2:ncol(pca_df), border_left = TRUE) %>% 
+  # Align decimals using the LaTeX dcolumn package
+  pack_rows("PCs", 1, nrow(pca_df)) %>%        # Optional grouping
+  row_spec(0, bold = TRUE, extra_css = "font-family: serif;") %>%
+  row_spec(1:nrow(pca_df), extra_css = "font-family: serif;") %>%
+  column_spec(1:ncol(pca_df), extra_css = "font-family: serif;") 
 ```
 
-Moving on to PCA, we can see (Table 2) that PC1 explains a lot of the variance 
-(around half, 48.41%). PC2 explains about a further fifth (17.94%). PC3 and PC4
-explain a further 10.83% and 7.79% respectively, and these 4 PCs cumulatively
-account for 84.97% of the overall variance. From PC5 and onwards, each PC 
-explains less than 7% of the extra variance. The elbow plot (Fig.6) displays this 
-flattening as the effect of each PC becomes smaller and smaller. It appears 
-that using 4 Principal Components would be sufficient in the model.
-
-```{r echo=FALSE}
-
+```{r PCA-loadings-table, fig.cap="Serbian Spa Variable Influence on Principal Components", echo=FALSE, message=FALSE, warning=FALSE}
+# Prepare loadings
 loadings <- pca_fit$rotation
-
 loadings_df <- as.data.frame(loadings)
 loadings_df$Variable <- rownames(loadings_df)
-
 loadings_df <- loadings_df[, c("Variable", paste0("PC", 1:4))]
-
 rownames(loadings_df) <- NULL
 
-knitr::kable(loadings_df, digits = 3, caption = "Serbian Spa Variable Influence on Principal Components", align = "c")
-
+# Create table
+kable(loadings_df, format = "latex", digits = 3, align = "r",
+      caption = "Serbian Spa Variable Influence on Principal Components") %>%
+  kable_styling(latex_options = c("HOLD_position"), full_width = FALSE) %>%
+  column_spec(1, bold = TRUE) %>%                         # Bold variable names
+  row_spec(0, bold = TRUE, extra_css = "font-family: serif;") %>% 
+  row_spec(1:nrow(loadings_df), extra_css = "font-family: serif;") %>%
+  column_spec(1:ncol(loadings_df), extra_css = "font-family: serif;")
 ```
-Table 3 displays the influence of individual variables on the four principal components. 
-In PC1, $HCO_3^-$ (0.388), $Na^+$ (0.345), elecCond (0.378), $K^+$ (0.376), 
-and totSolid(0.367) have the highest influence. PC1 strongly correlates with 
-variables relating to major ions and total dissolved content. PC1 measures the 
-overall mineralisation and ionisation levels of the water. Samples with high PC1 
-scores have high mineralisation. In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels(-0.329), $SiO_2$(-0.352),
-and $Na^+$ (-0.301), have the strongest influence. PC2 separates water with high 
-calcium and magnesium (hardness) from waters at higher temperatures. This could 
-mean that there is a difference between hard, cold waters and warmer waters. In PC3, $SO_2$ (0.717) and tempCels(0.521) have the strongest influence. Waters that have more sulfate are warmer. In PC4, $SiO_2$ (-0.611), $Cl^-$(0.676) and tempCels(0.302) have the strongest influence. Waters with higher chlorine levels have less silicone and are warmer.
 
-The first two principal components largely align with those found in the study,
-despite the difference between the variables we had access to. In the study, 
-four latent factors were found to explain 74.2% of the variance- 10% less
-than what we achieved with four factors for only the hydrochemical variables.
-The study's first PC was also largely positively influenced by mineralisation,
-and accounted for 37.5% of the variance, whereas ours accounted for 48.4%. 
-PC2 in the study accounted for 13.8%, while our PC2 accounted for 17.9%- in
-both cases, the second PC had high positive loadings on $Mg^{2+}$ and $Ca^{2+}$,
-reflecting on water hardness. The third and fourth principal components diverge
-from the study in our analysis- in the study, PC3 accounts for 10.3% of variance
-and is characterised by gross alpha activity and Ra-226. PC4 accounts for
-12.4% of variation and is also characterised by measures of radioactivity, of 
-radionuclides U-238, Ra-228. Given our lack of radioactivity data, our third and
-fourth PCs are hydrochemical factors.
+Table \@red(tab:PCA-loadings-table) displays the influence of individual variables on the four principal components. In PC1, $HCO_3^-$ (0.388), $Na^+$ (0.345), elecCond (0.378), $K^+$ (0.376), and totSolid (0.367) have the highest influence. PC1 strongly correlates with variables relating to major ions and total dissolved content. From this, we can conclude that PC1 primarily captures the overall mineral content and ionic composition of the water. Samples with high PC1 scores have high mineralisation. In PC2, $Mg^{2+}$ (0.438), $Ca^{2+}$ (0.55), tempCels (-0.329), $SiO_2$ (-0.352), and $Na^+$ (-0.301), have the strongest influence. PC2 separates water with high calcium and magnesium from waters at higher temperatures. High levels of calcium and magnesium is what is referred to as hard water. This suggests that there is a difference between hard, cold waters and softer, warmer waters. In PC3, $SO_2$ (0.717) and tempCels (0.521) have the strongest influence. Waters that have more sulfate are also warmer. In PC4, $SiO_2$ (-0.611), $Cl^-$ (0.676) and tempCels (0.302) have the strongest influence. Waters with higher chlorine levels have less silicone and are warmer.
+
+The first two principal components largely align with those found in the study, despite the difference between the variables we had access to. In the study, four latent factors were found to explain 74.2% of the variance- 10% less than what we achieved with four factors for only the hydrochemical variables. The study's first PC was also largely positively influenced by mineralisation, and accounted for 37.5% of the variance, whereas ours accounted for 48.4%. PC2 in the study accounted for 13.8%, while our PC2 accounted for 17.9%- in both cases, the second PC had high positive loadings on $Mg^{2+}$ and $Ca^{2+}$, reflecting on water hardness. The third and fourth principal components diverge from the study in our analysis- in the study, PC3 accounts for 10.3% of variance and is characterised by gross alpha activity and Ra-226. PC4 accounts for 12.4% of variation and is also characterised by measures of radioactivity, of  radionuclides U-238, Ra-228. Given our lack of radioactivity data, our third and fourth PCs are hydrochemical factors.
 
 ## Surprising observations
 
