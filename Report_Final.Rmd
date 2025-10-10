@@ -28,6 +28,7 @@ library(MASS)
 library(e1071)
 library(caret)
 library(wesanderson)
+library(psych)
 ```
 
 # **Introduction**
@@ -545,6 +546,40 @@ Along PC2, Vranskja has a strong negative score. Temperature has a strong
 negative influence on PC2, and Vranskja stands out among the sites for its
 extremely high temperature (near boiling, 95 $^{\circ}$C). 
 
+
+## Factor Analysis
+
+Factor analysis is a model estimation technique which deals with the assumptions of underlying causal structure, whereas PCA is a data transformation.It assumes that the covariation in the observed variables is due to the presence of one or more factors (latent variables) that exert causal influence on these observed variables. PCA does not make such assumptions but both PCA and FA do not have a dependent variable to be explained by independent variables. The hypothesis is therefore that there are unobserved variables that explain the observations.
+
+```{r}
+X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
+
+pvalues <- rep(0, 5) 
+for(f in 1:5) {
+  res <- try(factanal(X.log, factors = f), silent = TRUE) # get the p-values for each factor
+  if(!inherits(res, "try-error")) {
+    pvalues[f] <- res$PVAL
+  }
+}
+
+ggplot(data.frame(Factors = 1:5, pvalues = pvalues), 
+       aes(x = Factors, y = pvalues)) +
+  geom_line(color = "#046C9A", size = 1) +
+  geom_point(color = "#046C9A", size = 3) +
+  labs(
+    title = "Factor Adequacy Test",
+    x = "Number of Factors",
+    y = "p-value"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14)
+  )
+```
+
+
 ## geoStruct Groups
 
 ```{r echo=FALSE}
@@ -615,78 +650,108 @@ for(i in 1:n){
   pred[i] <- predict(fit_i, newdata=Xl[i,,drop=FALSE])
 }
 # compute confusion matrix
-cm <- confusionMatrix(pred, y)
+cm <- caret::confusionMatrix(pred, y)
 ```
 
-```{r fig.cap="Confusion Matrix for Naive Bayes Classification", echo=FALSE}
-# pred needs matching levels
+```{r confusionMatrix, fig.cap="Confusion Matrix for Naive Bayes Classification", echo=FALSE}
+y  <- factor(data$geoStruct)
+Xl <- scale(as.data.frame(X_log_matrix))
+# Leave-One-Out Cross-Validation
+n <- nrow(Xl); pred <- factor(rep(NA,n), levels=levels(y))
+for(i in 1:n){
+  fit_i <- naiveBayes(x=Xl[-i,], y=y[-i])
+  pred[i] <- predict(fit_i, newdata=Xl[i,,drop=FALSE])
+}
+
+# ensure factors have same levels
 pred <- factor(pred, levels = levels(y))
+y <- factor(y, levels = levels(y))
 
-# confusion table: rows = Predicted, cols = True
-cm_table <- table(Predicted = pred, True = y)
+# create confusion matrix table
+cm_table <- table(Predicted = pred, True = y) %>%
+  as.data.frame() %>%
+  rename(Freq = Freq)
 
-# data frame for kable
-cm_df <- as.data.frame.matrix(cm_table)  # keeps square format
-cm_df <- cbind(Predicted = rownames(cm_df), cm_df)
-rownames(cm_df) <- NULL
+# square matrix: make sure levels are respected for plotting
+cm_table$Predicted <- factor(cm_table$Predicted, levels = levels(y))
+cm_table$True <- factor(cm_table$True, levels = levels(y))
 
-kable(cm_df,
-      caption = "Confusion Matrix for Naive Bayes Classification \\label{tab:confusionMatrix}",
-      format = "latex",
-      align = c("c", rep("c", ncol(cm_df)-1))) %>%
-  kable_styling(latex_options = c("HOLD_position"), full_width = FALSE) %>%
-  row_spec(0, bold = TRUE) %>%
-  column_spec(1:ncol(cm_df), extra_css = "font-family: serif;")
+ggplot(cm_table, aes(x = True, y = Predicted, fill = Freq)) +
+  geom_tile(color = NA, size = 0.8) +
+  geom_text(aes(label = Freq), size = 6, family = "Times", fontface = "bold") +
+  scale_fill_gradient(low = "white", high = "#046C9A") +
+  labs(
+    x = "True Class",
+    y = "Predicted Class",
+    title = "LOOCV Confusion Matrix"
+  ) +
+  theme_minimal(base_family = "Times") +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    panel.grid = element_blank()
+  ) +
+  coord_fixed() 
 ```
 
 ```{r fig.cap="Naive Bayes Classification Statistics", echo=FALSE}
-# Overall statistics
-overall_df <- as.data.frame(t(cm$overall))
-overall_df$Class <- "Overall"
+# Extract Accuracy as a plain numeric
+acc <- unname(round(cm$overall["Accuracy"], 2))
 
-# Transpose correctly: stats as rows, class as column
-overall_df_t <- as.data.frame(t(overall_df[,-ncol(overall_df)]))
-colnames(overall_df_t) <- overall_df$Class
-overall_df_t <- cbind(Statistic = rownames(overall_df_t), overall_df_t)  # only one Statistic column
-rownames(overall_df_t) <- NULL
+# Manually create the table values
+overall_df <- data.frame(
+  Statistic = c("Accuracy", "No-Information Rate"),
+  Value = c(acc, 0.40)
+)
 
 # Table
-kable(overall_df_t,
+kable(overall_df,
       caption = "Naive Bayes Overall Classification Statistics \\label{tab:classificationOverallStats}",
       format = "latex",
       align = c("l", "c"),
       digits = 2) %>%
   kable_styling(latex_options = c("HOLD_position", "scale_down"),
                 full_width = FALSE) %>%
-  row_spec(0, bold = TRUE) %>%
-  column_spec(1:2, extra_css = "font-family: serif;")
+  row_spec(0, bold = TRUE)
 ```
 
 ```{r fig.cap="Naive Bayes Classification: Class-wise Statistics", echo=FALSE}
-# Class-wise statistics
+# Convert cm$byClass to data frame
 byclass_df <- as.data.frame(cm$byClass)
+
+# Add class labels
 byclass_df$Class <- rownames(byclass_df)
-rownames(byclass_df) <- NULL
 
-# Transpose correctly
-byclass_df_t <- as.data.frame(t(byclass_df[,-ncol(byclass_df)]))
-colnames(byclass_df_t) <- byclass_df$Class
-byclass_df_t <- cbind(Statistic = rownames(byclass_df_t), byclass_df_t)  # only one Statistic column
-rownames(byclass_df_t) <- NULL
+# Reshape so that classes are columns, stats are rows
+byclass_wide <- byclass_df %>%
+  pivot_longer(
+    cols = -Class,
+    names_to = "Statistic",
+    values_to = "Value"
+  ) %>%
+  pivot_wider(
+    names_from = Class,
+    values_from = Value
+  )
 
-# Table
-kable(byclass_df_t,
-      caption = "Naive Bayes Classification Statistics by Class \\label{tab:classificationByClassStats}",
+# Round for neatness
+byclass_wide[,-1] <- round(byclass_wide[,-1], 3)
+
+# Pretty wide table: rows = stats, cols = classes
+kable(byclass_wide,
+      caption = "Naive Bayes Class-wise Statistics \\label{tab:classificationByClassStats}",
       format = "latex",
-      align = c("l", rep("c", ncol(byclass_df_t)-1)),
-      digits = 2) %>%
+      align = c("l", rep("c", ncol(byclass_wide)-1)),
+      booktabs = TRUE,
+      digits = 3) %>%
   kable_styling(latex_options = c("HOLD_position", "scale_down"),
-                full_width = FALSE) %>%
-  row_spec(0, bold = TRUE) %>%
-  column_spec(1:ncol(byclass_df_t), extra_css = "font-family: serif;")
+                full_width = FALSE,
+                font_size = 11) %>%
+  row_spec(0, bold = TRUE)
 ```
 
-As we can see in the overall classification statistics in Table \@ref(tab:classificationOverallStats), the model achieved an overall accuracy of 50 percent, which is higher than the no-information rate of 40 percent but still modest. The Kappa statistic of 0.29 suggests only fair agreement between the predicted and true classes. The by class statistics in Table \@ref(tab:classificationByClassStats), the classification performance varied across groups. Karstic terrains (Class 2) and Metamorphic regions (Class 4) were the best recognised categories, with balanced accuracies of 0.81 and 0.74 respectively, indicating that their chemical profiles are relatively distinctive. Hydrological Basins (Class 1), on the other hand, were poorly distinguished and often misclassified as Volcanogen Massifs, as seen in the confusion matrix in Table \@ref(tab:confusionMatrix). Volcanogen Massifs themselves, despite being the largest group, were only moderately well classified, with a balanced accuracy of 0.53.
+As we can see in the overall classification statistics in Table \@ref(tab:classificationOverallStats), the model achieved an overall accuracy of 50 percent, which is higher than the no-information rate of 40 percent but still modest. The Kappa statistic of 0.29 suggests only fair agreement between the predicted and true classes. The by class statistics in Table \@ref(tab:classificationByClassStats), the classification performance varied across groups. Karstic terrains (Class 2) and Metamorphic regions (Class 4) were the best recognised categories, with balanced accuracies of 0.81 and 0.74 respectively, indicating that their chemical profiles are relatively distinctive. Hydrological Basins (Class 1), on the other hand, were poorly distinguished and often misclassified as Volcanogenic Massifs, as seen in the confusion matrix in Table \@ref(fig:confusionMatrix). Volcanogenic Massifs themselves, despite being the largest group, were only moderately well classified, with a balanced accuracy of 0.53.
 
 These results suggest that the groups, the geostructural categories, are only partially verified by the data. Some groups do exhibit clear multivariate chemical signatures, allowing them to be separated reasonably well, while others show substantial overlap that prevents reliable classification. In particular, the difficulty in separating Hydrological Basins from Volcanogen Massifs implies that the water chemistry of these groups is not sufficiently distinct. Overall, the analysis provides evidence that geological structure does influence chemical composition, but the effect is not strong enough across all groups for the classification to be considered fully verified. The geostructural groupings are therefore only partially confirmed by the data.
 
