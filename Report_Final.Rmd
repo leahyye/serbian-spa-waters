@@ -199,6 +199,26 @@ variability and pervasive right-skewness. The chemical composition of the water
 samples is largely dominated by bicarbonate, with sodium and chloride also 
 reaching very high values for some samples.
 
+```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
+par(family = "Times")
+cor_mat <- cor(numeric_cols, use = "pairwise.complete.obs", method = "pearson")
+corrplot(cor_mat,
+         method = "color",        
+         type = "upper",          
+         order = "hclust",        
+         addCoef.col = "black",   
+         number.cex = 0.7,        
+         tl.col = "black",        
+         tl.srt = 45,             
+         diag = FALSE, 
+         col = colorRampPalette(c("#046C9A","white","#FD6467"))(200)
+)
+``` 
+
+The correlation plot in Figure \@ref(fig:corrplot) reveals a few very highly correlated pairs of variables. Electrical conductivity, total solids, sodium, potassium, and chloride form a strongly correlated cluster, with Pearson's Correlation Coefficients from 0.37 to 0.96.  This indicates that they vary together across spa waters. Electrical conductivity in particular is directly related to the total dissolved solids in water, as more salts and minerals in the water increases the amount of ions, which in turn increase electrical conductivity.   
+In contrast, pH shows moderate negative correlations with several ions (e.g., C$\mathrm{Ca^{2+}}$, $\mathrm{Mg^{2+}}$, $\mathrm{HCO_3^-}$), suggesting 
+different geochemical influences. Overall, the matrix highlights both tightly linked chemical groups and variables with weaker or opposing trends.
+
 ```{r boxplots, echo=FALSE, include=TRUE, warning=FALSE, message=FALSE, fig.width=6, fig.height=6, dpi=100}
 # Select numeric features for scaling 
 X <- data[, 3:14]                    #all numerical categories
@@ -240,6 +260,7 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
     legend.position = "none"
   )
 ```
+
 Variables were standardised to z-scores to allow direct comparison despite differing measurement units. The boxplots In figure \@ref(fig:boxplots) show that some features (e.g. $\mathrm{Na^+}$, $\mathrm{Cl^-}$, $\mathrm{HCO_3^-}$) have greater variability and distinct outliers, while others remain tightly clustered around 
 the mean. This highlights which chemical measures are most heterogeneous across 
 the spa waters. However, all variables in the boxplot have a non-symmetrical 
@@ -290,8 +311,7 @@ data$log.HCO <- log(data$HCO)
 data$log.SiO <- log(data$SiO)
 ```
 
-After performing a log transformation of the variables, we recheck the 
-univariate and multivariate normality of the data. First we can inspect the boxplots in Figure \@ref(fig:boxplotsLogTransformed) to begin. 
+After performing a log transformation of the variables, we recheck the univariate and multivariate normality of the data. First we can inspect the boxplots in Figure \@ref(fig:boxplotsLogTransformed) to begin. 
 
 ```{r boxplotsLogTransformed, echo=FALSE, warning=FALSE, message = FALSE}
 X.log <- data[, 16:27]                    # all log transformed numerical variables
@@ -321,13 +341,10 @@ ggplot(box_long, aes(x = variable, y = value, fill = variable)) +
     legend.position = "none")
 ```
 
-The boxplots are far more symmetric than with the untransformed data, showing
-more conformity with the normal distribution. However, we can clearly see the
-presence of outliers, particularly with the variable $\mathrm{Mg^{2+}}$ which has
-four observations at least two standard deviations below the mean.
+The boxplots are far more symmetric than with the untransformed data, showing more conformity with the normal distribution. However, we can clearly see the presence of outliers, particularly with the variable $\mathrm{Mg^{2+}}$ which has four observations at least two standard deviations below the mean.
 
-```{r echo=FALSE, warning=FALSE, message = FALSE}
-X_log_matrix <- as.matrix(X.log[,-which(names(X.log) == ".row")]) # Remove the .row column for analysis
+```{r QQplotLogTransorm, echo=FALSE, warning=FALSE, message = FALSE}
+X_log_matrix <- as.matrix(X.log[, !names(X.log) %in% ".row"])
 
 # Fit MANOVA model
 fit_log <- manova(X_log_matrix ~ data$geoStruct)
@@ -340,53 +357,23 @@ S_res_log  <- cov(res_log)
 d2_res_log <- mahalanobis(res_log, center = mu_res_log, cov = S_res_log)
 
 # Degrees of freedom = number of variables
-p <- ncol(res_log)
+df_log <- ncol(res_log)
 
 # QQ-plot
-qqplot(qchisq(ppoints(nrow(res_log)), df = p), d2_res_log,
-       main = "Fig. 4: QQ-plot of MANOVA (log transformed) residuals",
+par(family = "serif",
+    cex.main = 2,
+    cex.lab = 1.8,
+    cex.axis = 1.8,
+    mar = c(5, 6, 4, 2))
+
+qqplot(qchisq(ppoints(nrow(res_log)), df = df_log), d2_res_log,
+       main = "QQ-plot of MANOVA (Log-Transformed) Residuals",
        xlab = expression(paste(chi^2, " quantiles")),
        ylab = expression(paste("Ordered residual ", d[M]^2)))
-abline(0,1,col="steelblue4")
+abline(0,1,col="#046C9A", lwd = 2)
 ```
 
-The points follow the line much more closely, only slight deviations from the 
-line at low and high values. The log transformed data much more closely 
-follows a multivariate normal distribution.
-
-```{r corrplot, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.asp=0.8}
-cor_mat <- cor(X, use = "pairwise.complete.obs", method = "pearson")
-
-# Define layout: 2 rows, 1 column — small top row for title
-layout(matrix(c(1, 2), nrow = 2), heights = c(0.1, 0.9))
-
-# Top row: title only
-par(mar = c(0, 0, 1, 0))  # No margins except top
-plot.new()
-title("Fig. 5: Correlation Matrix of Serbian Spa Water Variables", cex.main = 1.2)
-
-corrplot(
-  cor_mat,
-  method = "color",        
-  type = "upper",          
-  order = "hclust",        
-  addCoef.col = "black",   
-  number.cex = 0.7,        
-  tl.col = "black",        
-  tl.srt = 45,             
-  diag = FALSE,
-  col = colorRampPalette(c("firebrick3", "white", "steelblue4"))(200)
-)
-
-``` 
-
-Electrical conductivity, total solids, sodium, potassium, and chloride form a 
-strongly correlated cluster, indicating they vary together across spa waters. 
-In contrast, pH shows moderate negative correlations with several ions (e.g., 
-C$\mathrm{Ca^{2+}}$, $\mathrm{Mg^{2+}}$, $\mathrm{HCO_3^-}$), suggesting 
-different geochemical influences. Overall, the matrix highlights both tightly 
-linked chemical groups and variables with weaker or opposing trends.
-
+The QQ-plot of MANOVA residual Mahalanobis distances in Figure \@ref(fig:corrplot) shows that the points follow the line more closely after the log transformation.  Deviations still remain, particularly at high values, but the log-transformed data much more closely follow a multivariate normal distribution. We will continue with the log-transformed data while recognizing that this violates the assumptions of LDA, PCA, and MANOVA. 
 
 ## PCA
 
