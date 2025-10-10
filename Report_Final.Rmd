@@ -473,7 +473,7 @@ kable(surprising_sites,
 
 From the standardised $n=30$ observations, five springs are flagged as clear outliers (Table \@ref(tab:outlierTable)): Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites has at least one measurement more than three standard deviations from the mean. Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate ($3360$ mg/L). Vranjska stands out for its near-boiling temperature ($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels relative to the rest of the dataset. These five cases are the most “surprising” when the dataset is examined variable by variable.
 
-```{r pcaWithOutliers, fig.cap="PCA with Outliers Highlighted", echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r pcaWithOutliers, fig.cap="PCA with Outliers Highlighted", echo=FALSE, message=FALSE, warning=FALSE}
 # Mahalanobis distances
 mu <- colMeans(X)
 S  <- cov(X)
@@ -511,7 +511,6 @@ ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
   theme_minimal() +
   scale_color_brewer(palette = "Set1") +
   theme(legend.position = "right")
-
 ```
 Plotting the Mahalanobis distance against the first two principle components (Figure \@ref(fig:pcaWithOutliers)
 gives a multivariate view of the outliers in terms of their overall chemical
