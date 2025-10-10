@@ -448,7 +448,7 @@ The first two principal components largely align with those found in the study, 
 
 ## Surprising observations
 
-```{r outlierTable, fig.cap="Water sources with at least one variable > 3 standard deviations from the mean",echo=FALSE}
+```{r fig.cap="Water sources with at least one variable > 3 standard deviations from the mean",echo=FALSE}
 # Standardise numeric variables
 X <- scale(data[, 3:14])
 
@@ -519,7 +519,7 @@ a 95% Chi-Squared significance, another five sites were identified as outliers. 
 These are the same five as previously identified as having extreme values for
 individual variables, with the exception that Junakovic is no longer an outlier and Bujanovacka has replaced it.
 
-```{r outliersPCAScores, echo = FALSE}
+```{r echo = FALSE}
 outlier_table <- data.frame(
   Water_Source = data$waterSource[outliers],
   Geological_Group = data$geoStruct[outliers],
@@ -547,7 +547,7 @@ extremely high temperature (near boiling, 95 $^{\circ}$C).
 
 ## geoStruct Groups
 
-```{r groupsManova, echo=FALSE}
+```{r echo=FALSE}
 # Check p value
 manova_summary <- summary(fit_log, test = "Hotelling-Lawley")$stats
 
@@ -618,7 +618,7 @@ for(i in 1:n){
 cm <- confusionMatrix(pred, y)
 ```
 
-```{r confusionMatrix, fig.cap="", echo=FALSE}
+```{r fig.cap="Confusion Matrix for Naive Bayes Classification", echo=FALSE}
 # pred needs matching levels
 pred <- factor(pred, levels = levels(y))
 
@@ -639,8 +639,54 @@ kable(cm_df,
   column_spec(1:ncol(cm_df), extra_css = "font-family: serif;")
 ```
 
+```{r fig.cap="Naive Bayes Classification Statistics", echo=FALSE}
+# Overall statistics
+overall_df <- as.data.frame(t(cm$overall))
+overall_df$Class <- "Overall"
 
-The model achieved an overall accuracy of 50 percent, which is higher than the no-information rate of 40 percent but still modest. The Kappa statistic of 0.29 suggests only fair agreement between the predicted and true classes. The classification performance varied across groups. Karstic terrains (Class 2) and Metamorphic regions (Class 4) were the best recognised categories, with balanced accuracies of 0.81 and 0.74 respectively, indicating that their chemical profiles are relatively distinctive. Hydrological Basins (Class 1), on the other hand, were poorly distinguished and often misclassified as Volcanogen Massifs (Class 3). Volcanogen Massifs themselves, despite being the largest group, were only moderately well classified, with a balanced accuracy of 0.53.
+# Transpose correctly: stats as rows, class as column
+overall_df_t <- as.data.frame(t(overall_df[,-ncol(overall_df)]))
+colnames(overall_df_t) <- overall_df$Class
+overall_df_t <- cbind(Statistic = rownames(overall_df_t), overall_df_t)  # only one Statistic column
+rownames(overall_df_t) <- NULL
+
+# Table
+kable(overall_df_t,
+      caption = "Naive Bayes Overall Classification Statistics \\label{tab:classificationOverallStats}",
+      format = "latex",
+      align = c("l", "c"),
+      digits = 2) %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  column_spec(1:2, extra_css = "font-family: serif;")
+```
+
+```{r fig.cap="Naive Bayes Classification: Class-wise Statistics", echo=FALSE}
+# Class-wise statistics
+byclass_df <- as.data.frame(cm$byClass)
+byclass_df$Class <- rownames(byclass_df)
+rownames(byclass_df) <- NULL
+
+# Transpose correctly
+byclass_df_t <- as.data.frame(t(byclass_df[,-ncol(byclass_df)]))
+colnames(byclass_df_t) <- byclass_df$Class
+byclass_df_t <- cbind(Statistic = rownames(byclass_df_t), byclass_df_t)  # only one Statistic column
+rownames(byclass_df_t) <- NULL
+
+# Table
+kable(byclass_df_t,
+      caption = "Naive Bayes Classification Statistics by Class \\label{tab:classificationByClassStats}",
+      format = "latex",
+      align = c("l", rep("c", ncol(byclass_df_t)-1)),
+      digits = 2) %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"),
+                full_width = FALSE) %>%
+  row_spec(0, bold = TRUE) %>%
+  column_spec(1:ncol(byclass_df_t), extra_css = "font-family: serif;")
+```
+
+As we can see in the overall classification statistics in Table \@ref(tab:classificationOverallStats), the model achieved an overall accuracy of 50 percent, which is higher than the no-information rate of 40 percent but still modest. The Kappa statistic of 0.29 suggests only fair agreement between the predicted and true classes. The by class statistics in Table \@ref(tab:classificationByClassStats), the classification performance varied across groups. Karstic terrains (Class 2) and Metamorphic regions (Class 4) were the best recognised categories, with balanced accuracies of 0.81 and 0.74 respectively, indicating that their chemical profiles are relatively distinctive. Hydrological Basins (Class 1), on the other hand, were poorly distinguished and often misclassified as Volcanogen Massifs, as seen in the confusion matrix in Table \@ref(tab:confusionMatrix). Volcanogen Massifs themselves, despite being the largest group, were only moderately well classified, with a balanced accuracy of 0.53.
 
 These results suggest that the groups, the geostructural categories, are only partially verified by the data. Some groups do exhibit clear multivariate chemical signatures, allowing them to be separated reasonably well, while others show substantial overlap that prevents reliable classification. In particular, the difficulty in separating Hydrological Basins from Volcanogen Massifs implies that the water chemistry of these groups is not sufficiently distinct. Overall, the analysis provides evidence that geological structure does influence chemical composition, but the effect is not strong enough across all groups for the classification to be considered fully verified. The geostructural groupings are therefore only partially confirmed by the data.
 
