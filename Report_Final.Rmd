@@ -448,7 +448,7 @@ The first two principal components largely align with those found in the study, 
 
 ## Surprising observations
 
-```{r echo=FALSE}
+```{r outlierTable, fig.cap="Water sources with at least one variable > 3 standard deviations from the mean",echo=FALSE}
 # Standardise numeric variables
 X <- scale(data[, 3:14])
 
@@ -459,27 +459,20 @@ outliers <- which(apply(abs(X), 1, max) > 3)
 surprising_sites <- data[outliers, c("waterSource", "tempCels", "elecCond", "totSolid",
                  "Na", "Cl", "HCO")]
 
-knitr::kable(surprising_sites,
-             format = "latex",
-             caption = "Water sources with at least one variable > 3 standard deviations from the mean",
-             align = "c",
-             digits = 2) %>%
-  kable_styling(latex_options = "H", position = "center")
-            
+kable(surprising_sites,
+      format = "latex",
+      caption = "Water sources with at least one variable > 3 standard deviations from the mean \\label{tab:outlierTable}",
+      align = "c",
+      digits = 2) %>%
+  kable_styling(latex_options = "HOLD_position", full_width = FALSE, position = "center") %>%
+  row_spec(0, bold = TRUE, extra_css = "font-family: serif;") %>%   # Bold header row
+  row_spec(1:nrow(surprising_sites), extra_css = "font-family: serif;") %>% # Serif for data rows
+  column_spec(1:ncol(surprising_sites), extra_css = "font-family: serif;")       
 ```
 
-From the standardised $n=30$ observations, five springs are flagged as clear 
-outliers (Table 4): Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites 
-has at least one measurement more than three standard deviations from the mean. 
-Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total 
-dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high 
-concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate 
-($3360$ mg/L). Vranjska stands out for its near-boiling temperature 
-($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels 
-relative to the rest of the dataset. These five cases are the most “surprising” 
-when the dataset is examined variable by variable.
+From the standardised $n=30$ observations, five springs are flagged as clear outliers (Table \@ref(tab:outlierTable)): Junakovic, Selters, Vranjska, Tulaska, and Veluce. Each of these sites has at least one measurement more than three standard deviations from the mean. Junakovic is extreme in electrical conductivity ($5100~\mu$S/cm) and total dissolved solids ($6.2$ g/L). Selters is distinguished by exceptionally high concentrations of sodium ($2280$ mg/L), chloride ($1560$ mg/L), and bicarbonate ($3360$ mg/L). Vranjska stands out for its near-boiling temperature ($95^\circ$C), while Tulaska and Veluce show unusually high bicarbonate levels relative to the rest of the dataset. These five cases are the most “surprising” when the dataset is examined variable by variable.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r pcaWithOutliers, fig.cap="PCA with Outliers Highlighted", echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 # Mahalanobis distances
 mu <- colMeans(X)
 S  <- cov(X)
@@ -501,8 +494,8 @@ ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
   geom_point(size = 4, alpha = 0.8) +
   # Highlight outliers
   geom_point(data = subset(pca_plot_data, Outlier), 
-             aes(x = PC1, y = PC2), 
-             shape = 21, fill = "yellow", color = "orange", size = 4, stroke = 1.2) +
+             aes(x = PC1, y = PC2, color = Geological_Group), 
+             shape = 21, fill = "yellow", size = 4, stroke = 1.2, show.legend = FALSE) +
   geom_text(data = subset(pca_plot_data, Outlier),
             aes(label = Water_Source),
             color = "black",
@@ -519,15 +512,14 @@ ggplot(pca_plot_data, aes(x = PC1, y = PC2, color = Geological_Group)) +
   theme(legend.position = "right")
 
 ```
-Plotting the Mahalanobis distance against the first two principle components (Fig. 7)
-gives a multivariate view of the outliers, in terms of their overall chemical
+Plotting the Mahalanobis distance against the first two principle components (Figure \@ref(fig:pcaWithOutliers)
+gives a multivariate view of the outliers in terms of their overall chemical
 composition rather than a single variable. Using the Mahalanobis distance with
-a 95% Chi-Squared significance, another five sites were identified as outliers-
-these are the same five as previously identified as having extreme values for
-individual variables, with the exception that Junakovic is no longer an outlier,
-and Bujanovacka has replaced it.
+a 95% Chi-Squared significance, another five sites were identified as outliers. They are plotted with yellow centers. 
+These are the same five as previously identified as having extreme values for
+individual variables, with the exception that Junakovic is no longer an outlier and Bujanovacka has replaced it.
 
-```{r echo = FALSE}
+```{r outliersPCAScores, echo = FALSE}
 outlier_table <- data.frame(
   Water_Source = data$waterSource[outliers],
   Geological_Group = data$geoStruct[outliers],
@@ -538,14 +530,14 @@ outlier_table <- data.frame(
 
 knitr::kable(
   outlier_table,
-  caption = "Mahalanobis Outliers with PCA Scores",
+  caption = "Mahalanobis Outliers with PCA Scores \\label{tab:outliersPCAScores}",
   align = "c")%>%
   kable_styling(latex_options = "H", position = "center")
 ```
-Along the first PC, Selters, Bujanovacka and Tularska score highly (Table 5). 
-This indicates high mineralisation and ionisation in these samples, and is 
+
+Bujanovacka and Tularska score highly along the first PC, as can be seen in Table \@ref(tab:outliersPCAScores). This indicates high mineralisation and ionisation in these samples, and is 
 consistent with our earlier finding of Selters as having high concentrations 
-of chloride, sodium, and bicarbonate and Tulaska with high concentrations of
+of chloride, sodium, and bicarbonate and Tulaska having high concentrations of
 sodium and bicarbonate. Veluce also scores highly on concentrations
 of bicarbonate, giving it a relatively high score on PC1 but not as extreme.
 
@@ -555,18 +547,38 @@ extremely high temperature (near boiling, 95 $^{\circ}$C).
 
 ## geoStruct Groups
 
-```{r echo=FALSE}
+```{r groupsManova, echo=FALSE}
 # Check p value
-summary(fit_log, test = "Hotelling-Lawley")
+manova_summary <- summary(fit_log, test = "Hotelling-Lawley")$stats
+
+# Convert to a data frame
+manova_df <- as.data.frame(manova_summary)
+manova_df$Term <- gsub("^data\\$", "", rownames(manova_df))
+rownames(manova_df) <- NULL
+
+# Reorder columns so 'Term' is first
+manova_df <- manova_df[, c(ncol(manova_df), 1:(ncol(manova_df)-1))]
+
+# Round numeric columns for readability
+num_cols <- sapply(manova_df, is.numeric)
+manova_df[, num_cols] <- round(manova_df[, num_cols], 3)
+
+# Create a nice LaTeX table
+knitr::kable(manova_df,
+             caption = "MANOVA Test of Geological Structure Groups \\label{tab:groupsManova}",
+             align = "c",
+             booktabs = TRUE) %>%
+  kable_styling(latex_options = c("HOLD_position"), full_width = FALSE) %>%
+  row_spec(0, bold = TRUE)
 ```
 To assess whether the predefined geostructural groups are verified by the water 
 chemistry data, we began with a formal test of multivariate mean differences. A 
-MANOVA on the log-transformed variables produced a p-value of 0.057, which 
-provides only weak evidence that the group mean vectors differ. This suggests 
+MANOVA on the log-transformed variables produced a p-value of 0.057, which can be seen in Table \@ref(tab:groupsManova). This 
+provides only weak evidence that the group mean vectors differ, suggesting 
 that while some differences exist, they are not pronounced enough to be 
 considered statistically significant at conventional levels.
 
-```{r  echo=FALSE}
+```{r  groupVarCheck, fig.cap="Fig. 6: Visual Check of Group Covariance", echo=FALSE}
 lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
 lda_fit <- lda(geoStruct ~ ., data = lda_data)
 lda_scores <- predict(lda_fit)$x
@@ -582,11 +594,11 @@ ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
   theme_minimal()
 ```
 
-We can see from the LDA plot distinct shapes and orientations in ellipses 
-representing the covariance of the groups. Given the clear differences between
-these groups, the covariance matrices of the groups cannot be equal and LDA is 
+We can see distinct shapes and orientations in the ellipses 
+representing the covariance of the groups in the LDA plot in Figure \@ref(fig:groupVarCheck). Given the clear differences between
+these groups, the covariance matrices of the groups cannot be equal. LDA is therefore
 not appropriate for this data. The assumption of equal covariance is clearly 
-failed when looking at the distinction in the shape and orientation between each 
+violated when looking at the distinction in the shape and orientation between each 
 group.
 
 As an alternative, we adopted the Naive Bayes classifier. Unlike LDA, Naive Bayes does not require estimation of full covariance matrices and instead assumes conditional independence of the variables within each class. This makes it more appropriate for datasets with small and unbalanced groups such as ours, where some geostructural categories contained as few as five observations. We fitted the Naive Bayes model to the log-transformed variables and evaluated performance using leave-one-out cross-validation to provide a fair estimate of classification accuracy.
