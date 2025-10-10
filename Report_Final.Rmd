@@ -550,7 +550,7 @@ extremely high temperature (near boiling, 95 $^{\circ}$C).
 
 Factor analysis is a model estimation technique which deals with the assumptions of underlying causal structure, whereas PCA is a data transformation.It assumes that the covariation in the observed variables is due to the presence of one or more factors (latent variables) that exert causal influence on these observed variables. PCA does not make such assumptions but both PCA and FA do not have a dependent variable to be explained by independent variables. The hypothesis is therefore that there are unobserved variables that explain the observations.
 
-```{r}
+```{r factorAdequacyTest, fig.cap="Factor Adequacy Test",echo=FALSE}
 X.log <- X.log[, !names(X.log) == ".row"] # remove '.row' column
 
 pvalues <- rep(0, 5) 
@@ -566,7 +566,6 @@ ggplot(data.frame(Factors = 1:5, pvalues = pvalues),
   geom_line(color = "#046C9A", size = 1) +
   geom_point(color = "#046C9A", size = 3) +
   labs(
-    title = "Factor Adequacy Test",
     x = "Number of Factors",
     y = "p-value"
   ) +
@@ -611,14 +610,14 @@ fa.diagram(faresult$loadings, digits=4)
 
 The red arrows indicate negative variables with negative loadings. The four factors that were identified by our analysis are as follows:
 
-```{r fig.cap="Summary of Factor Analysis",echo=FALSE}
+```{r fig.cap="Summary of Factor Analysis",echo=FALSE, escape=FALSE}
 # Create a data frame with factor info
 fa_summary <- data.frame(
   Factor = c("F1", "F2", "F3", "F4"),
   `Main Loadings` = c(
     "Total Solids (+), Electrical Conductivity (+), Na (+), HCO$_3$ (+), K (+), SiO$_2$ (+)",
     "Mg$^{2+}$ (+), Ca$^{2+}$ (+), pH (−), Temperature (−)",
-    "Cl (−)",
+    "Cl (+)",
     "SO$_4^{2-}$ (+)"
   ),
   Description = c(
@@ -652,7 +651,7 @@ manova_summary <- summary(fit_log, test = "Hotelling-Lawley")$stats
 # Convert to a data frame
 manova_df <- as.data.frame(manova_summary)
 manova_df$Term <- gsub("^data\\$", "", rownames(manova_df))
-rownames(manova_df) <- NULL
+manova_df[is.na(manova_df)] <- ""
 
 # Reorder columns so 'Term' is first
 manova_df <- manova_df[, c(ncol(manova_df), 1:(ncol(manova_df)-1))]
@@ -676,7 +675,7 @@ provides only weak evidence that the group mean vectors differ, suggesting
 that while some differences exist, they are not pronounced enough to be 
 considered statistically significant at conventional levels.
 
-```{r  groupVarCheck, fig.cap="Fig. 6: Visual Check of Group Covariance", echo=FALSE}
+```{r  groupVarCheck, fig.cap="Visual Check of Group Covariance", echo=FALSE}
 lda_data <- data.frame(geoStruct = data$geoStruct, X_log_matrix)
 lda_fit <- lda(geoStruct ~ ., data = lda_data)
 lda_scores <- predict(lda_fit)$x
@@ -686,7 +685,7 @@ plot_data <- data.frame(lda_scores, Group = as.factor(lda_data$geoStruct))
 ggplot(plot_data, aes(x = LD1, y = LD2, color = Group)) +
   geom_point(size = 3) +
   stat_ellipse(level = 0.95) +
-  labs(title = "Fig. 6: Visual Check of Group Covariance",
+  labs(title = "Visual Check of Group Covariance",
        x = "Linear Discriminant 1",
        y = "Linear Discriminant 2") +
   theme_minimal()
@@ -841,6 +840,4 @@ the most distinctive chemical profiles. Hydrological Basins and Volgagenic
 Massifs were difficult to accurately classify separately, indicating that
 they are not distinguishable by unique chemical profiles.
 
-
-
-
+## References
