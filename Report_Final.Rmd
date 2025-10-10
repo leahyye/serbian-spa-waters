@@ -579,6 +579,70 @@ ggplot(data.frame(Factors = 1:5, pvalues = pvalues),
   )
 ```
 
+The null and alternative hypotheses for each number of factors (k) are as follows:
+
+$H_0:$ k factors are sufficient\
+$H_1:$ More than k factors are needed
+
+Given the hypotheses, we can see from the Factor Analysis Plot in Figure \@ref(fig:factorAdequacyTest) that a five-factor model is sufficiently complex to capture the underlying structure in the data, because the $p$-value is greater than 0.05. Four or less factors is not sufficient as the $p$-values are all less than 0.03.
+
+
+```{r fig.cap="Factor Loadings from Factor Analysis", echo=FALSE}
+faresult <- factanal(X.log, factors=5)
+loadings_df <- as.data.frame(unclass(faresult$loadings))
+
+loadings_df <- round(loadings_df, 3)
+
+kable(loadings_df,
+      caption = "Factor Loadings from Factor Analysis \\label{tab:FALoadings}",
+      format = "latex",
+      booktabs = TRUE,
+      align = "c") %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"),
+                full_width = FALSE,
+                font_size = 10) %>%
+  row_spec(0, bold = TRUE)
+```
+
+The Factor Loadings in Table \@ref(tab:FALoadings) show that including factor five increases the cumulative explained variance to 82.4% of the total variance. Its individual loadings, however, are relatively low with a maximum of 0.379. Given this result, we decided to retain four factors for the vizualisation. 
+
+```{r FADiagram, fig.cap="Factor Loadings Diagram", echo=FALSE }
+fa.diagram(faresult$loadings, digits=4)
+```
+
+The red arrows indicate negative variables with negative loadings. The four factors that were identified by our analysis are as follows:
+
+```{r fig.cap="Summary of Factor Analysis",echo=FALSE}
+# Create a data frame with factor info
+fa_summary <- data.frame(
+  Factor = c("F1", "F2", "F3", "F4"),
+  `Main Loadings` = c(
+    "Total Solids (+), Electrical Conductivity (+), Na (+), HCO$_3$ (+), K (+), SiO$_2$ (+)",
+    "Mg$^{2+}$ (+), Ca$^{2+}$ (+), pH (−), Temperature (−)",
+    "Cl (−)",
+    "SO$_4^{2-}$ (+)"
+  ),
+  Description = c(
+    "Highly mineralised waters (high solidity and electrical conductivity)",
+    "Hard, acidic, and cooler waters (Mg$^{2+}$ and Ca$^{2+}$ dominant)",
+    "Chloric waters",
+    "Sulfate-rich waters"
+  ),
+  stringsAsFactors = FALSE
+)
+
+# Display table
+kable(fa_summary, format = "latex", booktabs = TRUE,
+      caption = "Summary of Factor Analysis \\label{summaryFactors}") %>%
+  kable_styling(latex_options = c("HOLD_position", "scale_down"), full_width = FALSE) %>%
+  column_spec(1, bold = TRUE) %>%
+  column_spec(2, width = "7cm", extra_css = "font-family: serif;") %>%
+  column_spec(3, width = "6cm", extra_css = "font-family: serif;")
+```
+
+The four-factor model explains 79% of the cumulative variance, compared to PCA, where four principal components explain 85%. Factor analysis is preferable for model selection because it isolates meaningful underlying structure while excluding noise, thus maintaining parsimony. In contrast, PCA required consideration of all 12 principal components to capture the variance structure of spa water chemistry, whereas factor analysis required only five or fewer factors to identify the main compositional patterns.
+
+Factor analysis is better for model selection since it doesn't include noise like PCA (that's why PCA variance for 4 PCs was greater than FA 4 factors cumulative variance), and maintains parsimony. PCA had to consider all 12 Principal Components, whereas FA only had to look at 5 or less factors for determining the underlying structure of spa water composition.
 
 ## geoStruct Groups
 
